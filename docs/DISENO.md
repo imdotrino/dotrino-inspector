@@ -23,9 +23,11 @@ Las tres frases que definen el producto y de las que no se sale:
    arranca servicios: encuentra, explica y te da la receta del recambio. Un secreto en el
    `.env` está mal guardado, pero *está funcionando* — y una herramienta que lo guarda
    bien y te deja el servicio caído es peor que no hacer nada.
-3. **No sale nada de la máquina.** El Inspector no tiene red hacia Dotrino. Ni telemetría,
-   ni informes a la nube, ni "compárteme el hallazgo". El único destino de un secreto es
-   la bóveda del propio usuario.
+3. **Lo que encuentra no sale de la máquina.** Ni telemetría, ni informes a la nube, ni
+   "compárteme el hallazgo": ningún servidor se entera nunca de qué se halló ni de dónde.
+   Lo único que puede salir es **un secreto que el usuario mande a su propia bóveda**, y
+   sale sellado para ella. Ojo con la formulación: **no** es "el Inspector no se conecta a
+   Dotrino" — hablarle a tu bóveda usa el proxy como transporte. El detalle, en §5.1.
 
 ### Qué NO es
 
@@ -99,13 +101,15 @@ Lo que eso decide de una vez:
 El frontend es **Vite + Vue 3** como el resto (§1 de las convenciones), servido por el
 propio comando, con `<dotrino-topbar>` (§5), bilingüe es/en (§9) y lenguaje llano (§9.1).
 
-> **Excepción consciente al §6.1 (botón de perfil).** El Inspector va **sin** `profile`:
-> el perfil vive en el vault y pintarlo obliga a hablar con `id.dotrino.com`, que es justo
-> lo que esta herramienta promete no hacer. Por lo mismo lleva `support-no-count`: la
-> moneda registraba su apertura en el store compartido, y el topbar no sabía callarlo —
-> se le añadió el atributo a `@dotrino/topbar` (0.8.3) en vez de rodearlo desde aquí.
-> Cuando el Inspector necesite identidad (F2, para escribir en la bóveda) hablará con la
-> bóveda **local**, no con el iframe. Es una pantalla **administrativa** (§5.1):
+> **Excepción al §6.1 (botón de perfil), acotada a F1.** Va **sin** `profile` por una
+> razón simple: en F1 el Inspector **no tiene identidad todavía** — no guarda nada, no
+> firma nada, no hay a quién enseñar. Pintar el perfil obligaría a cargar el iframe del
+> vault para no mostrar nada útil. Por lo mismo lleva `support-no-count`: la moneda
+> registraba su apertura en el store compartido y el topbar no sabía callarlo, así que se
+> le añadió el atributo a `@dotrino/topbar` (0.8.3) en vez de rodearlo desde aquí.
+>
+> **En F2 esto se revisa**: al enrolarse como aparato para escribir en la bóveda, el
+> Inspector sí tendrá identidad, y entonces el §6.1 aplica como a cualquier app. Es una pantalla **administrativa** (§5.1):
 empieza por la lista de hallazgos, no se presenta, no lleva documentación — lo que haya
 que explicar va a su página del wiki o detrás de un botón `(i)`, **salvo las advertencias,
 que se quedan a la vista**.
@@ -284,8 +288,10 @@ Una herramienta que reúne en una pantalla todos los secretos de la máquina es 
 goloso. Las invariantes, y **cada una se escribe como test** (memoria del ecosistema: lo
 que no es un test, no es una invariante):
 
-1. **Sin red saliente.** El Inspector no habla con ningún dominio de Dotrino. La bóveda es
-   local o del acta; nada más.
+1. **Lo hallado no viaja.** Ningún hallazgo —ni una ruta, ni un tipo, ni un recuento—
+   sale de la máquina. No hay telemetría ni informes remotos, y no los habrá. Lo único
+   que sale, y solo si el usuario lo pide hallazgo a hallazgo, es el secreto que él
+   manda a su bóveda (§5.1).
 2. **El servidor local escucha solo en `127.0.0.1`**, con token de un solo uso, y se
    apaga al cerrar la ventana.
 3. **El valor de un secreto nunca se escribe en disco por el Inspector**, salvo el destino
@@ -296,6 +302,35 @@ que no es un test, no es una invariante):
 6. **Sin modo automático.** No hay bandera que adopte y borre sin preguntar. Si alguien la
    pide, la respuesta es no: esa bandera es la que un día se lleva por delante una
    producción.
+
+### 5.1. Entonces, ¿el Inspector se conecta a Dotrino o no?
+
+Hay que decirlo con precisión, porque la versión corta —«no sale nada de tu máquina»— se
+rompe en cuanto aparece la primera acción, y una promesa que se rompe sola es peor que no
+haberla hecho.
+
+**Hoy (F1): cero red.** El Inspector solo lee tu disco y te enseña lo que hay. No abre una
+sola conexión, y la propia UI lo hace imposible: la página se sirve con
+`default-src 'self'`, así que **no puede** pedirle nada a nadie que no sea su servidor
+local — ni aunque alguien metiera el código para hacerlo.
+
+**Desde F2, cuando pueda guardar en la bóveda: sí, una conexión, y es inevitable.** El
+plano de control de la bóveda va por `wss://proxy.dotrino.com` (`@dotrino/vault`,
+`lib/src/index.js`) — **también cuando la bóveda está en esta misma máquina**: no existe
+un socket local para eso. O sea que guardar un secreto en tu propia bóveda pasa por el
+proxio. Lo que hay que entender de esa conexión:
+
+- **El proxio no puede leer lo que transporta.** Los secretos viajan **sellados para la
+  bóveda destinataria**; el transporte mueve sobres cerrados. Eso no es una promesa nueva
+  del Inspector: es cómo funciona el vault desde siempre, y lo que se comprueba es eso.
+- **Lo que viaja es lo que el usuario mandó**, uno a uno. Nunca la lista de hallazgos,
+  nunca las rutas de tu disco, nunca un resumen de lo que tienes.
+- **La conexión la abre el comando, no la página.** El Node del `npx` es quien habla con
+  la bóveda; la UI sigue encerrada en su `default-src 'self'`. Conviene que siga así: la
+  página es lo que un día podría cargar algo raro, y no tiene por dónde.
+
+La frase honesta, entonces, es: **«el Inspector no le cuenta a nadie lo que encuentra, y
+lo que guardes en tu bóveda viaja cerrado»** — no «el Inspector no se conecta a nada».
 
 ## 6. Identidad, aprobación y multi-aparato
 

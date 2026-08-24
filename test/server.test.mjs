@@ -48,3 +48,13 @@ test('un token inventado no vale', async () => {
   const r = await fetch(base + '/api/context', { headers: { authorization: 'Bearer ' + 'a'.repeat(48) } })
   assert.equal(r.status, 401)
 })
+
+test('la página se sirve con una CSP que le impide hablar con nadie de fuera', async () => {
+  // Es la invariante del DISENO §5.1 en su forma comprobable: aunque alguien metiera
+  // código para llamar a un servidor, el navegador no le dejaría.
+  const r = await fetch(base + '/')
+  const csp = r.headers.get('content-security-policy') || ''
+  assert.match(csp, /default-src 'self'/)
+  assert.match(csp, /connect-src 'self'/)
+  assert.match(csp, /frame-ancestors 'none'/)
+})

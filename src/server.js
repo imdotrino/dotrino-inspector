@@ -1,5 +1,9 @@
 // El servidor local. Es la superficie de ataque de la herramienta, así que va acotado
 // desde la primera línea (DISENO §2):
+//
+// Y una precisión sobre la red (DISENO §5.1): la PÁGINA no habla con nadie —se sirve con
+// `default-src 'self'`, así que no puede—; cuando el Inspector sepa guardar en la bóveda
+// (F2), quien abrirá esa conexión es el proceso Node, no la UI. Conviene que siga así.
 //   · escucha SOLO en 127.0.0.1;
 //   · el token de la URL es de un solo uso: se canjea por uno de sesión y se invalida;
 //   · muere con el comando.
@@ -151,7 +155,8 @@ export function createInspectorServer () {
       res.writeHead(200, {
         'content-type': MIME[extname(full).toLowerCase()] || 'application/octet-stream',
         'cache-control': 'no-store',
-        // La UI no carga nada de fuera y nadie la puede enmarcar.
+        // La UI no carga nada de fuera y nadie la puede enmarcar. Esto NO es cosmético:
+        // es lo que hace que «la página no habla con nadie» sea comprobable, no una promesa.
         'content-security-policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'",
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'no-referrer'

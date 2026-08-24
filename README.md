@@ -10,8 +10,10 @@ npx @dotrino/inspector --print    # el informe por la terminal
 ```
 
 **Mira, explica y sugiere: decides tú.** Por ahora no ejecuta ninguna acción —no edita ni
-borra archivos, no arranca servicios y no guarda nada por su cuenta—, no hay modo
-automático, y **nada sale de tu máquina**.
+borra archivos, no arranca servicios y no guarda nada por su cuenta— y no hay modo
+automático. **Lo que encuentra no se lo cuenta a nadie**: no hay telemetría ni informes
+remotos, hoy no abre una sola conexión, y el día que pueda guardar en tu bóveda solo
+viajará el secreto que tú mandes, sellado para ella.
 
 Documentación de uso: `wiki.dotrino.com` *(pendiente, F4)*. Diseño y decisiones:
 [`docs/DISENO.md`](./docs/DISENO.md).
@@ -33,7 +35,10 @@ Linux, macOS y Windows.
 - **No rota credenciales.** Rotar es de cada proveedor; lo que aporta el Inspector es
   protegerlas con tu bóveda, que sirve igual para todas. Para lo ya filtrado en git avisa
   y te dice dónde se rota.
-- No manda nada a ningún lado: no habla con ningún dominio de Dotrino.
+- No cuenta a nadie lo que encontró: ni telemetría, ni informes, ni rutas de tu disco.
+  Hoy no abre ninguna conexión (la UI se sirve con `default-src 'self'`, así que no
+  puede). Cuando sepa guardar en tu bóveda usará el proxio como transporte —igual que
+  cualquier pieza del ecosistema— y lo que viaje irá sellado para tu bóveda.
 
 ## Desarrollo
 
