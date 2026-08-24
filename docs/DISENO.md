@@ -10,7 +10,7 @@
 
 ## 1. Qué es
 
-Un **binario de escritorio con interfaz gráfica** que recorre la máquina del usuario,
+Una **herramienta de escritorio** —se levanta con `npx` y abre su UI— que recorre la máquina del usuario,
 **enseña** qué credenciales tiene expuestas en archivos, y le ofrece —una por una, y
 solo si él lo pide— guardarlas en su bóveda y **volver a dejar andando** lo que dependía
 de ese archivo.
@@ -37,7 +37,7 @@ Las tres frases que definen el producto y de las que no se sale:
   ecosistema no promete auditorías de terceros (`CLAUDE.md`, línea Enterprise).
 - **No es para servidores.** Decidido por el dueño: es una **app de escritorio**, con
   ventana. En un VPS sin sesión gráfica no es su sitio — ahí manda el vault y su TUI. El
-  binario detecta que no hay entorno gráfico y lo dice en vez de arrancar a medias.
+  comando detecta que no hay entorno gráfico y lo dice en vez de arrancar a medias.
 - **No borra por su cuenta.** Borrar el original es siempre un paso separado, explícito,
   y posterior a la verificación.
 
@@ -56,37 +56,53 @@ No inventa almacén ni protocolo: **guardar es del vault** (`dotrino-vault`, caj
 `dotrino-env`), **identidad y aprobación son del acta**. El Inspector es la cara que
 faltaba: la que te enseña el problema y te acompaña a resolverlo.
 
-## 2. Forma: binario de escritorio con ventana
+## 2. Forma: se levanta con `npx`, la UI abre en el escritorio
 
-Decidido: **binario, UI gráfica, escritorio.** No TUI, no servidor, no PWA suelta.
+Decidido por el dueño el 2026-08-24: **como todo lo demás del ecosistema, con un comando.**
 
-Eso deja tres maneras de tener una ventana. La comparación, con lo que ya existe en el
-ecosistema:
+```
+npx @dotrino/inspector
+```
 
-| Camino | A favor | En contra |
-|---|---|---|
-| **Node SEA + navegador del sistema en `127.0.0.1`** | Reusa **todo** lo que ya está escrito: los `@dotrino/*` son JavaScript, y `dotrino-vault` ya tiene `packaging/build.sh`, `build-deb.sh` y `build-win.sh` para empaquetar un SEA | no es una ventana propia: es una pestaña del navegador |
-| **Node SEA + envoltorio nativo de ventana** (webview del sistema apuntando a ese mismo `127.0.0.1`) | ventana de verdad, mismo frontend, el binario sigue siendo el de arriba | un binario nativo más por plataforma que compilar y firmar |
-| **Tauri** | ventana nativa, binario pequeño | el backend es **Rust** y los clientes del vault/identity son JS: habría que meter Node como *sidecar*, o reescribir la mitad del ecosistema en Rust |
+El comando levanta un servidor **solo en `127.0.0.1`** y abre la UI en el escritorio del
+usuario. No hay instalador que descargar, no hay binario que firmar, no hay toolchain
+nuevo: es el mismo patrón de `npx dotrino-content` y `npx @dotrino/terminal-agent`, y a
+quien no tenga Node lo bootstrapea el instalador universal (`dotrino.com/install.sh`,
+`install.ps1`), que ya existe y es reutilizable por cualquier app.
 
-**Decisión: los dos primeros, en ese orden, con el mismo frontend.**
+Sigue siendo **una herramienta de escritorio, no de servidor**: asume una sesión gráfica
+para abrir su ventana, y si no la hay lo dice en vez de arrancar a medias.
 
-- **F1: SEA + navegador.** El binario levanta un servidor **solo en `127.0.0.1`**, con
-  un **token de un solo uso en la URL** que abre él mismo, y **muere al cerrar la sesión**.
-  Sin token no se responde a nada; sin `Origin` local tampoco. Esto ya es "UI gráfica en
-  el escritorio" y se puede tener andando pronto.
-- **F4: envoltorio de ventana.** El mismo servidor local, pero con una ventana propia y
-  sin navegador de por medio. El frontend no cambia ni una línea.
+Lo que eso decide de una vez:
 
-**Tauri queda descartado** mientras el resto del ecosistema sea JavaScript. Se anota aquí
-para no volver a discutirlo en tres meses.
+- **Nada de Tauri, nada de SEA, nada de `.deb`/`.exe`.** Un binario empaquetado no
+  aportaría nada que `npx` no dé y sumaría dos toolchains (Rust para la ventana, SEA para
+  el empaquetado) a un ecosistema que es JavaScript entero. El motivo de fondo: el
+  Inspector **tiene que hablarle a la bóveda**, y el cliente del vault es JS — no se
+  reimplementa en otro lenguaje (regla del ecosistema). Si un día existe ventana nativa,
+  será una cáscara alrededor de esto, no un backend distinto.
+- **La versión la lleva npm.** No aplica la §11.5 (versión en el nombre del archivo)
+  porque no hay archivo descargable: `npx @dotrino/inspector@0.3.0` es el equivalente, y
+  la UI enseña su versión.
+- **Actualizar es no hacer nada:** `npx` ya trae la última. Un instalador tendría que
+  resolver el problema del actualizador; así no existe.
 
-El frontend es **Vite + Vue 3** como el resto (§1 de las convenciones), y comparte los
-componentes: `<dotrino-topbar>` con `profile` (§5, §6.1), bilingüe es/en (§9), lenguaje
-llano (§9.1). Es una pantalla **administrativa** (§5.1): empieza por la lista de
-hallazgos, no se presenta, no lleva documentación — lo que haya que explicar va a su
-página del wiki o detrás de un botón `(i)`, **salvo las advertencias, que se quedan a la
-vista**.
+El frontend es **Vite + Vue 3** como el resto (§1 de las convenciones), servido por el
+propio comando, y comparte los componentes: `<dotrino-topbar>` con `profile` (§5, §6.1),
+bilingüe es/en (§9), lenguaje llano (§9.1). Es una pantalla **administrativa** (§5.1):
+empieza por la lista de hallazgos, no se presenta, no lleva documentación — lo que haya
+que explicar va a su página del wiki o detrás de un botón `(i)`, **salvo las advertencias,
+que se quedan a la vista**.
+
+### El servidor local
+
+Es la superficie de ataque de la herramienta, así que va acotado desde la primera línea:
+
+- escucha **solo en `127.0.0.1`**, nunca en `0.0.0.0`;
+- **token de un solo uso en la URL** que abre el propio comando: sin token no responde a
+  nada, y se comprueba también el `Origin`;
+- **muere con el comando**: cerrar la terminal apaga el servidor. No queda un demonio
+  vivo con los secretos de la máquina a un puerto de distancia.
 
 ## 3. Qué busca (catálogo de hallazgos)
 
@@ -194,7 +210,7 @@ Una herramienta que reúne en una pantalla todos los secretos de la máquina es 
 goloso. Las invariantes, y **cada una se escribe como test** (memoria del ecosistema: lo
 que no es un test, no es una invariante):
 
-1. **Sin red saliente.** El binario no habla con ningún dominio de Dotrino. La bóveda es
+1. **Sin red saliente.** El Inspector no habla con ningún dominio de Dotrino. La bóveda es
    local o del acta; nada más.
 2. **El servidor local escucha solo en `127.0.0.1`**, con token de un solo uso, y se
    apaga al cerrar la ventana.
@@ -223,10 +239,10 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 | Fase | Qué entra |
 |---|---|
 | **F0** | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
-| **F1** | Motor de detección (catálogo §3) + UI en ventana (SEA + navegador) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
+| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
 | **F2** | **Adoptar** en el vault, con la comprobación de colisión. |
 | **F3** | **Recablear** + **verificar** + **retirar**, con las recetas de §4.3. |
-| **F4** | Envoltorio de ventana nativa, `.deb` y `.exe` versionados (§11.5), landing en `inspector.dotrino.com` (§1.2), página en el wiki (§9.2), alta en el catálogo (§11.4). |
+| **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
 | **F5** | Revisar otra máquina del acta. |
 
 F1 se puede publicar solo: **enseñar el problema ya vale**, aunque el usuario todavía
@@ -239,7 +255,7 @@ tenga que resolverlo a mano.
 - Nombres alternativos descartados: `guard`, `sentinel`, `defender`, `watchtower` — todos
   presuponen un antagonista, contra la regla de redacción de `CLAUDE.md`. `audit` promete
   una auditoría que no existe.
-- **Tauri descartado** mientras el ecosistema sea JavaScript (§2).
+- **Se levanta con `npx`** (§2). Sin binario empaquetado, sin instalador, sin Tauri ni SEA: la versión la lleva npm y actualizar es no hacer nada.
 - **Sin modo automático**, nunca (§5.6).
 - **Retirar el original exige verificación verde** (§4.4).
 
@@ -250,16 +266,17 @@ tenga que resolverlo a mano.
 2. **Qué pasa con `tracked-by-git`.** ¿El Inspector se mete a ayudar a rotar la credencial
    (abrir la página del proveedor, guardar la nueva), o solo advierte? Ayudar es mucho más
    útil y mucho más trabajo.
-3. **Windows y macOS.** F1 asume Linux. Los tipos del catálogo cambian bastante (Credential
-   Manager, Llavero). ¿Entran en F4 o se dejan fuera de la primera versión?
+3. **Windows y macOS.** El `npx` corre en los tres, pero F1 asume Linux en el catálogo: los
+   tipos cambian bastante (Credential Manager, Llavero). ¿Entran en F4 o se dejan fuera de
+   la primera versión?
 4. **El escáner del ecosistema.** Ver §11.
 
 ## 10. Lo que reusa (y no se reimplementa)
 
 `@dotrino/vault` (cajones y `dotrino-env`) · `@dotrino/identity` (identidad y firma) ·
 `@dotrino/remote-agent` (enrolar el aparato) · `@dotrino/topbar`, `@dotrino/support`,
-`@dotrino/profile`, `@dotrino/install` (UI) · el empaquetado SEA/`.deb`/`.exe` de
-`dotrino-vault/packaging/`.
+`@dotrino/profile` (UI) · el instalador universal `dotrino.com/install.sh` para quien no
+tenga Node.
 
 ## 11. Relación con la idea del "escáner de vulnerabilidades"
 
