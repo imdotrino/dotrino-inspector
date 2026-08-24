@@ -97,8 +97,15 @@ Lo que eso decide de una vez:
 > el Inspector se beneficia sin cambiar una línea.
 
 El frontend es **Vite + Vue 3** como el resto (§1 de las convenciones), servido por el
-propio comando, y comparte los componentes: `<dotrino-topbar>` con `profile` (§5, §6.1),
-bilingüe es/en (§9), lenguaje llano (§9.1). Es una pantalla **administrativa** (§5.1):
+propio comando, con `<dotrino-topbar>` (§5), bilingüe es/en (§9) y lenguaje llano (§9.1).
+
+> **Excepción consciente al §6.1 (botón de perfil).** El Inspector va **sin** `profile`:
+> el perfil vive en el vault y pintarlo obliga a hablar con `id.dotrino.com`, que es justo
+> lo que esta herramienta promete no hacer. Por lo mismo lleva `support-no-count`: la
+> moneda registraba su apertura en el store compartido, y el topbar no sabía callarlo —
+> se le añadió el atributo a `@dotrino/topbar` (0.8.3) en vez de rodearlo desde aquí.
+> Cuando el Inspector necesite identidad (F2, para escribir en la bóveda) hablará con la
+> bóveda **local**, no con el iframe. Es una pantalla **administrativa** (§5.1):
 empieza por la lista de hallazgos, no se presenta, no lleva documentación — lo que haya
 que explicar va a su página del wiki o detrás de un botón `(i)`, **salvo las advertencias,
 que se quedan a la vista**.
@@ -305,8 +312,8 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 
 | Fase | Qué entra |
 |---|---|
-| **F0** | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
-| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver**, **descartar** y **la receta para copiar** (§4.3). **Ninguna acción**: no toca la máquina y tampoco escribe en la bóveda. Ya es útil solo. |
+| **F0** ✅ | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
+| **F1** ✅ | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver**, **descartar** y **la receta para copiar** (§4.3). **Ninguna acción**: no toca la máquina y tampoco escribe en la bóveda. Ya es útil solo. |
 | **F2** | Primera acción: **guardar en la bóveda** (§4.2), con la comprobación de colisión. Sigue sin tocar un archivo de la máquina. |
 | **F3** | *(Solo si el dueño lo decide)* aplicar la receta por él: escribir el arranque, comprobar y retirar el original. Opt-in y por hallazgo. |
 | **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
