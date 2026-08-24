@@ -19,10 +19,10 @@ Las tres frases que definen el producto y de las que no se sale:
 
 1. **Mira y reporta. No arregla solo.** Ninguna acción ocurre sin que el usuario la
    elija. El Inspector no tiene modo automático, ni siquiera opt-in.
-2. **No rompe nada sin dar el recambio.** Nunca se ofrece "quitar este archivo" sin
-   haber generado antes el arranque equivalente y **haberlo probado**. Un secreto en el
-   `.env` está mal guardado, pero *está funcionando*; una herramienta que lo guarda bien
-   y deja el servicio caído es peor que no hacer nada.
+2. **No toca nada. Sugiere.** Por ahora no edita, no mueve, no borra archivos y no
+   arranca servicios: encuentra, explica y te da la receta del recambio. Un secreto en el
+   `.env` está mal guardado, pero *está funcionando* — y una herramienta que lo guarda
+   bien y te deja el servicio caído es peor que no hacer nada.
 3. **No sale nada de la máquina.** El Inspector no tiene red hacia Dotrino. Ni telemetría,
    ni informes a la nube, ni "compárteme el hallazgo". El único destino de un secreto es
    la bóveda del propio usuario.
@@ -38,8 +38,8 @@ Las tres frases que definen el producto y de las que no se sale:
 - **No es para servidores.** Decidido por el dueño: es una **app de escritorio**, con
   ventana. En un VPS sin sesión gráfica no es su sitio — ahí manda el vault y su TUI. El
   comando detecta que no hay entorno gráfico y lo dice en vez de arrancar a medias.
-- **No borra por su cuenta.** Borrar el original es siempre un paso separado, explícito,
-  y posterior a la verificación.
+- **No es un arreglador automático.** No edita archivos ni borra el original: eso lo
+  haces tú siguiendo la receta que te da (§4).
 
 ### Su lugar en el ecosistema
 
@@ -176,20 +176,34 @@ Un escáner que grita por todo se cierra a la semana. Tres defensas:
 3. **Nada de porcentajes ni notas globales.** No hay "tu seguridad es 73 %": es una nota
    inventada que no ayuda a decidir. Hay una lista, ordenada.
 
-## 4. El flujo: ver → adoptar → recablear → verificar → retirar
+## 4. El flujo: ver → guardar en la bóveda → sugerir cómo
 
-Los cinco pasos son **del usuario**, uno a uno, y cada uno se puede parar.
+Decidido por el dueño el 2026-08-24: **por lo pronto el Inspector sugiere cómo, pero no
+edita nada.** No escribe, no mueve, no borra ni un archivo de la máquina, y no arranca
+servicios. Encuentra, explica y te da la receta; aplicarla es tuyo.
+
+Esto no es una versión recortada por falta de tiempo: es lo que hace que la herramienta se
+pueda abrir sin miedo la primera vez. Un programa que recorre tu disco buscando secretos y
+además **modifica** archivos de arranque es algo que nadie corre a ciegas. Uno que solo
+mira y te dice qué hacer, sí.
+
+> **Un matiz que hay que confirmar.** «No editar nada» se entiende sobre **los archivos de
+> la máquina**. Guardar un secreto en **tu bóveda** (§4.2) no edita ningún archivo: añade
+> una entrada a tu propio vault, que era el pedido original (*"que ayude a guardarlos en el
+> vault"*). Así queda escrito aquí. Si la intención era que en F1 tampoco escriba en la
+> bóveda, el §4.2 pasa entero a fase siguiente y F1 se queda solo en ver y sugerir.
 
 ### 4.1. Ver (`inspect`)
 
 Recorrido del disco con las carpetas de siempre excluidas (`node_modules`, `.git/objects`,
-`dist`, cachés). El usuario elige el alcance: su carpeta de proyectos, su `$HOME`, o una
-ruta suelta. **Solo lectura.**
+`dist`, cachés). El usuario elige el alcance (§9.1). **Solo lectura**, y esto es literal:
+el Inspector abre archivos para mirarlos y nada más.
 
-### 4.2. Adoptar (`adopt`) — guardarlo en el vault
+### 4.2. Guardar en la bóveda (`adopt`)
 
-El secreto pasa al cajón que le corresponde en la bóveda del usuario, por el camino que
-ya existe (`ns` por servicio, valor sellado). Aquí:
+El secreto pasa al cajón que le corresponde en la bóveda del usuario, por el camino que ya
+existe (`ns` por servicio, valor sellado). **El archivo original se queda intacto donde
+está** — esto añade una copia protegida, no mueve nada.
 
 - **La bóveda tiene que estar abierta**; si no lo está, la UI lo dice y enlaza, no falla
   con un error técnico.
@@ -199,13 +213,13 @@ ya existe (`ns` por servicio, valor sellado). Aquí:
   Pisar el secreto de un servicio en producción sin avisar es exactamente el fallo que
   esta herramienta existe para evitar.
 
-### 4.3. Recablear (`wire`) — la conectividad que se pierde
+### 4.3. Sugerir cómo (`suggest`) — la conectividad que se pierde
 
-Es la parte que el dueño pidió explícitamente y **la que decide si la herramienta se usa
-o se abandona**. Al sacar el secreto del archivo, algo deja de arrancar; el Inspector
-escribe el arranque equivalente:
+Es la parte que el dueño pidió explícitamente y **la que decide si la herramienta se usa o
+se abandona**. Si sacas el secreto del archivo, algo deja de arrancar; el Inspector te
+enseña —**en pantalla, para copiar**— el arranque equivalente:
 
-| Hallazgo | Qué escribe |
+| Hallazgo | Qué te enseña |
 |---|---|
 | `.env` de un servicio Node | el arranque con `dotrino-env run --ns <ns> -- <comando>` |
 | servicio de PM2 | el `ecosystem.config` equivalente, envuelto igual |
@@ -214,42 +228,41 @@ escribe el arranque equivalente:
 | token de npm / gh | el `.npmrc` / la sesión generados al vuelo y borrados al terminar |
 | Docker / compose | el `env_file` sustituido por variables inyectadas al arrancar |
 
-Reglas del recableado:
+Reglas de la sugerencia:
 
-- **Se enseña el script antes de escribir nada**, con lo que cambia marcado. El usuario
-  lo puede editar en la propia UI.
-- **Nada se sobrescribe en silencio:** el archivo original se guarda al lado con su
-  fecha, y la UI dice dónde quedó.
+- **Es texto que copias, no un botón que aplica.** La UI lo enseña completo, con el `ns` y
+  las claves reales ya rellenados —nada de `<PON_AQUÍ_TU_NS>`— y un botón de copiar.
+- **Lleva sus pasos en orden**, incluido lo que el Inspector no hace: *"comprueba que
+  arranca así; cuando arranque, borra el `.env`"*. La comprobación y el borrado son tuyos,
+  y la receta lo dice en vez de darlo por sabido.
 - **Si para un hallazgo no hay receta, se dice.** Es preferible "esto sé encontrarlo pero
-  no sé recablearlo, aquí está lo que sí puedes hacer" a un script inventado.
+  no sé cómo recablearlo, esto es lo que sí puedes hacer" a un script inventado que rompe
+  un despliegue.
 
-### 4.4. Verificar (`verify`)
+### 4.4. Lo que el Inspector NO hace (y por qué está escrito aquí)
 
-Arranca el servicio con el arranque nuevo y **sin** el archivo original (movido a un lado,
-no borrado) y dice si levantó. **Es el paso que da permiso al siguiente**: sin verificación
-verde, la UI no ofrece retirar el original.
+Ni ahora ni sin una decisión explícita del dueño:
 
-### 4.5. Retirar (`retire`)
-
-Recién aquí se ofrece borrar el archivo en claro, y solo con la verificación en verde.
-
-**Y el Inspector no rota credenciales.** Decidido por el dueño el 2026-08-24: *"la idea es
-que te ayude a proteger con Dotrino Vault antes que rotar"*. La razón es de producto, no
-de esfuerzo:
-
-- **Rotar es del proveedor, no de Dotrino.** Cada credencial se rota en su sitio —GitHub,
-  AWS, npm— cada uno con su pantalla, su API y su modo de romperte el despliegue. Una
-  herramienta que promete rotar promete un catálogo de integraciones que envejece solo.
-- **Proteger sirve para todas por igual.** Guardar en la bóveda y recablear el arranque
-  funciona igual para las cientos de credenciales que existen, sin saber nada del
-  proveedor. Ahí es donde el Inspector añade lo que nadie más añade.
-- **Rotar sin proteger no arregla nada:** la credencial nueva acaba en el mismo `.env` en
-  claro que la vieja. **Proteger primero es el orden correcto**, no un atajo.
+- **no edita, mueve ni borra archivos** — el `.env` lo borras tú, cuando compruebes que ya
+  no hace falta;
+- **no arranca servicios** para verificar. Por eso desaparece el problema de *"¿y si el
+  proyecto no sabe arrancar solo?"*: no hay nada que arrancar, la comprobación es del
+  usuario y la receta le dice cómo hacerla;
+- **no rota credenciales.** Del dueño, el mismo día: *"la idea es que te ayude a proteger
+  con Dotrino Vault antes que rotar"*. Rotar es del proveedor —GitHub, AWS, npm, cada uno
+  con su pantalla y su API—, y prometerlo es prometer un catálogo de integraciones que
+  envejece solo. Guardar en la bóveda, en cambio, sirve igual para cualquier credencial.
+  Y el orden importa: **rotar sin proteger no arregla nada**, la credencial nueva acaba en
+  el mismo `.env` en claro que la vieja.
 
 Para el caso peor —`tracked-by-git`, el secreto ya viajó— la advertencia se queda a la
-vista y es explícita: **borrarlo ahora no lo saca del historial**, y ahí sí la salida es
-rotar en el proveedor. El Inspector lo **dice** —con el nombre del proveedor si lo sabe y
-el enlace a donde se hace— pero no lo hace por ti, y no finge que borrar bastó.
+vista (§5.1 de las convenciones: las advertencias no se esconden) y es explícita: **borrarlo
+ahora no lo saca del historial**, y ahí sí la salida es rotar en el proveedor. El Inspector
+lo **dice** —con el nombre del proveedor si lo sabe y el enlace a donde se hace— pero no lo
+hace por ti, y no finge que borrar bastó.
+
+Cuando alguna de estas cosas se implemente, será **opt-in, por hallazgo y con la receta a
+la vista antes de tocar nada** — nunca un modo automático (§5).
 
 ## 5. Seguridad de la propia herramienta
 
@@ -287,8 +300,8 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 |---|---|
 | **F0** | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
 | **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
-| **F2** | **Adoptar** en el vault, con la comprobación de colisión. |
-| **F3** | **Recablear** + **verificar** + **retirar**, con las recetas de §4.3. |
+| **F2** | **Guardar en la bóveda**, con la comprobación de colisión, y las **recetas** del §4.3 en pantalla. Sigue sin tocar un archivo. |
+| **F3** | *(Solo si el dueño lo decide)* aplicar la receta por él: escribir el arranque, comprobar y retirar el original. Opt-in y por hallazgo. |
 | **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
 | **F5** | Revisar otra máquina del acta. |
 
@@ -304,28 +317,27 @@ tenga que resolverlo a mano.
   una auditoría que no existe.
 - **Se levanta con `npx`** (§2). Sin binario empaquetado, sin instalador, sin Tauri ni SEA: la versión la lleva npm y actualizar es no hacer nada.
 - **Sin modo automático**, nunca (§5.6).
-- **Retirar el original exige verificación verde** (§4.4).
+- **Sugiere, no edita** (§4): no toca archivos, no arranca servicios, no borra el
+  original. Guardar en la bóveda sí, porque no edita nada de la máquina.
 - **Los tres sistemas desde F1** (§3): cada tipo declara dónde mira en cada uno; el
   llavero del sistema no es un hallazgo y los permisos de Windows son su propio tipo.
-- **El Inspector no rota credenciales** (§4.5): protege con la bóveda, y para lo ya
+- **El Inspector no rota credenciales** (§4.4): protege con la bóveda, y para lo ya
   filtrado advierte y señala dónde se rota. Rotar es del proveedor.
 
 ## 9. Lo que falta decidir
 
-1. **Alcance por defecto del recorrido.** Propuesta, salvo que el dueño diga otra cosa:
-   **no `$HOME` entero la primera vez**. Por defecto se recorren las **ubicaciones
-   conocidas** (`~/.ssh`, `~/.aws`, `~/.npmrc`, historial del shell… las de la tabla del
-   §3) más **la carpeta de proyectos que el usuario elija**. `$HOME` completo queda como
-   una opción explícita, con su aviso de que va a tardar. El motivo: un primer recorrido
-   que se come media hora y saca 400 hallazgos de carpetas que el usuario no esperaba es
-   la forma más rápida de que cierre la herramienta y no vuelva.
-2. **Qué hace `verify` con un servicio que no sabe arrancar solo.** Si el `.env` es de
-   algo que se levanta a mano, no hay nada que arrancar para comprobar. ¿Se pide el
-   comando al usuario, o ese hallazgo se queda sin el paso de verificación —y por tanto
-   sin oferta de retirar?
+### 9.1. Alcance por defecto del recorrido
 
-*(Resueltas el 2026-08-24: los tres sistemas entran en F1 (§3), y el Inspector no rota
-credenciales (§4.5).)*
+Propuesta, salvo que el dueño diga otra cosa: **no `$HOME` entero la primera vez**. Por
+defecto se recorren las **ubicaciones conocidas** (`~/.ssh`, `~/.aws`, `~/.npmrc`, historial
+del shell… las de la tabla del §3) más **la carpeta de proyectos que el usuario elija**.
+`$HOME` completo queda como una opción explícita, con su aviso de que va a tardar. El
+motivo: un primer recorrido que se come media hora y saca 400 hallazgos de carpetas que el
+usuario no esperaba es la forma más rápida de que cierre la herramienta y no vuelva.
+
+*(Resueltas el 2026-08-24: los tres sistemas entran en F1 (§3); el Inspector sugiere pero
+no edita (§4), lo que retira de la mesa la pregunta de cómo verificar un proyecto que no
+sabe arrancar solo; y no rota credenciales (§4.4).)*
 
 ## 10. Lo que reusa (y no se reimplementa)
 
