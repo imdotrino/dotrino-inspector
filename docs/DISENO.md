@@ -133,6 +133,29 @@ una **razón** legible y una **acción propuesta**. El catálogo de F1:
 | `tracked-by-git` | cualquiera de los anteriores **dentro de un repo y seguido por git** (el más grave: ya viajó) |
 | `ignored-but-present` | está en `.gitignore` — bien — pero sigue en claro en el disco |
 
+### Los tres entornos, desde F1
+
+Decidido por el dueño el 2026-08-24: **Linux, macOS y Windows desde la primera versión.**
+El `npx` corre en los tres, así que la diferencia está en el catálogo. Cada tipo declara
+en qué sistemas aplica y **dónde mira en cada uno**:
+
+| | Linux | macOS | Windows |
+|---|---|---|---|
+| llaves SSH | `~/.ssh` | `~/.ssh` | `%USERPROFILE%\.ssh` |
+| historial del shell | `.bash_history`, `.zsh_history` | `.zsh_history` | `ConsoleHost_history.txt` de PowerShell |
+| nube | `~/.aws`, `~/.config/gcloud`, kubeconfig | igual | `%USERPROFILE%\.aws`, `%APPDATA%` |
+| permisos | `world-readable` por modo Unix | igual | ACL: **otro concepto**, ver abajo |
+
+Dos consecuencias que hay que respetar y son fáciles de equivocar:
+
+- **El llavero del sistema NO es un hallazgo.** El Llavero de macOS y el Administrador de
+  credenciales de Windows guardan cifrado y con permiso del sistema: ahí el secreto está
+  **bien**. El Inspector mira **archivos en claro**, y marcar el llavero sería ruido del
+  peor tipo — el que enseña a ignorar la herramienta.
+- **`world-readable` no se traduce a Windows.** El modo Unix no existe ahí; el equivalente
+  es mirar la ACL, y es lo bastante distinto como para que sea **su propio tipo**
+  (`acl-too-open`) en vez de forzar el de Unix a decir algo que no significa.
+
 Dos reglas del catálogo:
 
 - **Se puede ampliar sin tocar la UI.** Un tipo es un módulo con `match()` y `explain()`;
@@ -208,10 +231,25 @@ verde, la UI no ofrece retirar el original.
 
 ### 4.5. Retirar (`retire`)
 
-Recién aquí se ofrece borrar el archivo en claro. Y con lo que corresponda según el caso:
-si estaba `tracked-by-git`, **se advierte de que el secreto ya está en el historial y que
-borrarlo ahora no lo saca de ahí** — la salida real es rotar la credencial, y eso se dice,
-aunque no lo haga la herramienta.
+Recién aquí se ofrece borrar el archivo en claro, y solo con la verificación en verde.
+
+**Y el Inspector no rota credenciales.** Decidido por el dueño el 2026-08-24: *"la idea es
+que te ayude a proteger con Dotrino Vault antes que rotar"*. La razón es de producto, no
+de esfuerzo:
+
+- **Rotar es del proveedor, no de Dotrino.** Cada credencial se rota en su sitio —GitHub,
+  AWS, npm— cada uno con su pantalla, su API y su modo de romperte el despliegue. Una
+  herramienta que promete rotar promete un catálogo de integraciones que envejece solo.
+- **Proteger sirve para todas por igual.** Guardar en la bóveda y recablear el arranque
+  funciona igual para las cientos de credenciales que existen, sin saber nada del
+  proveedor. Ahí es donde el Inspector añade lo que nadie más añade.
+- **Rotar sin proteger no arregla nada:** la credencial nueva acaba en el mismo `.env` en
+  claro que la vieja. **Proteger primero es el orden correcto**, no un atajo.
+
+Para el caso peor —`tracked-by-git`, el secreto ya viajó— la advertencia se queda a la
+vista y es explícita: **borrarlo ahora no lo saca del historial**, y ahí sí la salida es
+rotar en el proveedor. El Inspector lo **dice** —con el nombre del proveedor si lo sabe y
+el enlace a donde se hace— pero no lo hace por ti, y no finge que borrar bastó.
 
 ## 5. Seguridad de la propia herramienta
 
@@ -248,7 +286,7 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 | Fase | Qué entra |
 |---|---|
 | **F0** | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
-| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
+| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
 | **F2** | **Adoptar** en el vault, con la comprobación de colisión. |
 | **F3** | **Recablear** + **verificar** + **retirar**, con las recetas de §4.3. |
 | **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
@@ -267,18 +305,27 @@ tenga que resolverlo a mano.
 - **Se levanta con `npx`** (§2). Sin binario empaquetado, sin instalador, sin Tauri ni SEA: la versión la lleva npm y actualizar es no hacer nada.
 - **Sin modo automático**, nunca (§5.6).
 - **Retirar el original exige verificación verde** (§4.4).
+- **Los tres sistemas desde F1** (§3): cada tipo declara dónde mira en cada uno; el
+  llavero del sistema no es un hallazgo y los permisos de Windows son su propio tipo.
+- **El Inspector no rota credenciales** (§4.5): protege con la bóveda, y para lo ya
+  filtrado advierte y señala dónde se rota. Rotar es del proveedor.
 
 ## 9. Lo que falta decidir
 
-1. **Alcance por defecto del recorrido.** ¿`$HOME` entero la primera vez (lento, y mira
-   carpetas que el usuario quizá no espera) o solo la carpeta de proyectos y el `~/.ssh`?
-2. **Qué pasa con `tracked-by-git`.** ¿El Inspector se mete a ayudar a rotar la credencial
-   (abrir la página del proveedor, guardar la nueva), o solo advierte? Ayudar es mucho más
-   útil y mucho más trabajo.
-3. **Windows y macOS.** El `npx` corre en los tres, pero F1 asume Linux en el catálogo: los
-   tipos cambian bastante (Credential Manager, Llavero). ¿Entran en F4 o se dejan fuera de
-   la primera versión?
-4. **El escáner del ecosistema.** Ver §11.
+1. **Alcance por defecto del recorrido.** Propuesta, salvo que el dueño diga otra cosa:
+   **no `$HOME` entero la primera vez**. Por defecto se recorren las **ubicaciones
+   conocidas** (`~/.ssh`, `~/.aws`, `~/.npmrc`, historial del shell… las de la tabla del
+   §3) más **la carpeta de proyectos que el usuario elija**. `$HOME` completo queda como
+   una opción explícita, con su aviso de que va a tardar. El motivo: un primer recorrido
+   que se come media hora y saca 400 hallazgos de carpetas que el usuario no esperaba es
+   la forma más rápida de que cierre la herramienta y no vuelva.
+2. **Qué hace `verify` con un servicio que no sabe arrancar solo.** Si el `.env` es de
+   algo que se levanta a mano, no hay nada que arrancar para comprobar. ¿Se pide el
+   comando al usuario, o ese hallazgo se queda sin el paso de verificación —y por tanto
+   sin oferta de retirar?
+
+*(Resueltas el 2026-08-24: los tres sistemas entran en F1 (§3), y el Inspector no rota
+credenciales (§4.5).)*
 
 ## 10. Lo que reusa (y no se reimplementa)
 
