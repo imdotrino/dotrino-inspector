@@ -87,6 +87,15 @@ Lo que eso decide de una vez:
 - **Actualizar es no hacer nada:** `npx` ya trae la última. Un instalador tendría que
   resolver el problema del actualizador; así no existe.
 
+> **Anotado, para después del Inspector** (acordado con el dueño el 2026-08-24): al dueño
+> le gusta el patrón de los instaladores de agentes —**un comando una vez y después
+> `dotrino-inspector` a secas**— y el instalador universal **hoy no hace eso**: `install.sh`
+> asegura Node y hace `npx`, sin dejar comando en el `PATH`. Se arregla en
+> `dotrino-install`, que lo hereda todo el ecosistema, y está descrito en
+> [`PENDIENTES.md`](../../PENDIENTES.md). **No bloquea nada de aquí**: el Inspector se
+> diseña y se escribe contra `npx`, y el día que el instalador sepa instalar de verdad,
+> el Inspector se beneficia sin cambiar una línea.
+
 El frontend es **Vite + Vue 3** como el resto (§1 de las convenciones), servido por el
 propio comando, y comparte los componentes: `<dotrino-topbar>` con `profile` (§5, §6.1),
 bilingüe es/en (§9), lenguaje llano (§9.1). Es una pantalla **administrativa** (§5.1):
