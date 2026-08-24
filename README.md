@@ -1,19 +1,50 @@
 # Dotrino Inspector
 
-Herramienta de escritorio que te enseña qué credenciales tienes guardadas en claro en tu
-máquina, y te acompaña a moverlas a tu bóveda sin que se te caiga nada por el camino.
+Te enseña qué credenciales tienes guardadas en claro en tu máquina —contraseñas en un
+`.env`, llaves SSH sin frase, tokens en el historial de la terminal— y te dice cómo
+protegerlas con tu bóveda sin que se te caiga nada por el camino.
 
-**Mira, explica y sugiere: decides tú.** Por ahora no ejecuta ninguna acción —no edita
-ni borra archivos, y no guarda nada por su cuenta—, no hay modo automático, y nada sale
-de tu máquina.
+```sh
+npx @dotrino/inspector            # abre la UI en tu escritorio
+npx @dotrino/inspector --print    # el informe por la terminal
+```
 
-Se levanta con un comando: `npx @dotrino/inspector`.
+**Mira, explica y sugiere: decides tú.** Por ahora no ejecuta ninguna acción —no edita ni
+borra archivos, no arranca servicios y no guarda nada por su cuenta—, no hay modo
+automático, y **nada sale de tu máquina**.
 
-Estado: **en diseño** (F0). Ver [`docs/DISENO.md`](./docs/DISENO.md).
+Documentación de uso: `wiki.dotrino.com` *(pendiente, F4)*. Diseño y decisiones:
+[`docs/DISENO.md`](./docs/DISENO.md).
+
+## Qué busca
+
+`.env` con secretos · llaves privadas SSH (y cuáles no tienen frase) · tokens de npm y de
+GitHub · credenciales de AWS/Google/Kubernetes/Docker · certificados de firma de apps ·
+`.netrc`, `.pgpass`, `.git-credentials` · credenciales escritas en el historial del shell.
+
+De cada hallazgo mira además **quién más puede leerlo** (permisos) y si **está seguido por
+git** — que es el caso grave, porque entonces el secreto ya viajó.
+
+Linux, macOS y Windows.
+
+## Qué NO hace
+
+- No edita, mueve ni borra archivos, y no arranca servicios para probar nada.
+- **No rota credenciales.** Rotar es de cada proveedor; lo que aporta el Inspector es
+  protegerlas con tu bóveda, que sirve igual para todas. Para lo ya filtrado en git avisa
+  y te dice dónde se rota.
+- No manda nada a ningún lado: no habla con ningún dominio de Dotrino.
 
 ## Desarrollo
 
-Todavía no hay código. El diseño manda sobre lo que se escriba.
+```sh
+npm test                 # el motor de detección y las invariantes del servidor local
+npm run build            # compila la UI (web/) a web/dist
+node bin/dotrino-inspector.js --no-open
+```
+
+El servidor local escucha **solo en `127.0.0.1`**, el token de la URL es de un solo uso
+(se canjea por uno de sesión y se invalida) y **muere con el comando**.
 
 ## Licencia
 

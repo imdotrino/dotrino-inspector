@@ -1,0 +1,33 @@
+{
+  "name": "@dotrino/inspector",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Dotrino Inspector: te enseña qué credenciales tienes en claro en tu máquina y cómo protegerlas con tu bóveda. No edita nada.",
+  "bin": {
+    "dotrino-inspector": "bin/dotrino-inspector.js"
+  },
+  "scripts": {
+    "start": "node bin/dotrino-inspector.js",
+    "scan": "node bin/dotrino-inspector.js --print",
+    "build": "cd web && npm install && npm run build",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imdotrino/dotrino-inspector.git"
+  },
+  "homepage": "https://inspector.dotrino.com/",
+  "files": [
+    "bin",
+    "src",
+    "web/dist",
+    "README.md"
+  ]
+}
