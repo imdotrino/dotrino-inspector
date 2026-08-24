@@ -176,7 +176,7 @@ Un escáner que grita por todo se cierra a la semana. Tres defensas:
 3. **Nada de porcentajes ni notas globales.** No hay "tu seguridad es 73 %": es una nota
    inventada que no ayuda a decidir. Hay una lista, ordenada.
 
-## 4. El flujo: ver → guardar en la bóveda → sugerir cómo
+## 4. El flujo: ver y sugerir (las acciones, después)
 
 Decidido por el dueño el 2026-08-24: **por lo pronto el Inspector sugiere cómo, pero no
 edita nada.** No escribe, no mueve, no borra ni un archivo de la máquina, y no arranca
@@ -187,11 +187,11 @@ pueda abrir sin miedo la primera vez. Un programa que recorre tu disco buscando 
 además **modifica** archivos de arranque es algo que nadie corre a ciegas. Uno que solo
 mira y te dice qué hacer, sí.
 
-> **Un matiz que hay que confirmar.** «No editar nada» se entiende sobre **los archivos de
-> la máquina**. Guardar un secreto en **tu bóveda** (§4.2) no edita ningún archivo: añade
-> una entrada a tu propio vault, que era el pedido original (*"que ayude a guardarlos en el
-> vault"*). Así queda escrito aquí. Si la intención era que en F1 tampoco escriba en la
-> bóveda, el §4.2 pasa entero a fase siguiente y F1 se queda solo en ver y sugerir.
+**Y las acciones son un paso posterior** (confirmado el mismo día): en la primera versión
+el Inspector **no ejecuta nada**, tampoco escribir en la bóveda. Guardar, recablear y
+retirar existen en este documento porque hay que diseñarlos ahora —la receta que se sugiere
+tiene que ser exactamente la que un día se aplique sola—, pero se implementan después
+(§7).
 
 ### 4.1. Ver (`inspect`)
 
@@ -199,7 +199,12 @@ Recorrido del disco con las carpetas de siempre excluidas (`node_modules`, `.git
 `dist`, cachés). El usuario elige el alcance (§9.1). **Solo lectura**, y esto es literal:
 el Inspector abre archivos para mirarlos y nada más.
 
-### 4.2. Guardar en la bóveda (`adopt`)
+### 4.2. Guardar en la bóveda (`adopt`) — *fase posterior*
+
+**No entra en la primera versión**; se diseña aquí porque la receta que el Inspector
+sugiere tiene que nombrar el cajón y la clave exactos, y para eso hay que tener decidido
+cómo se llaman. Mientras tanto, la receta le dice al usuario cómo guardarlo él con
+`dotrino-env`.
 
 El secreto pasa al cajón que le corresponde en la bóveda del usuario, por el camino que ya
 existe (`ns` por servicio, valor sellado). **El archivo original se queda intacto donde
@@ -241,7 +246,9 @@ Reglas de la sugerencia:
 
 ### 4.4. Lo que el Inspector NO hace (y por qué está escrito aquí)
 
-Ni ahora ni sin una decisión explícita del dueño:
+En la primera versión, **ninguna acción**: ni guardar en la bóveda (§4.2). Y estas tres,
+además, no las hace ni con las acciones ya implementadas, salvo decisión explícita del
+dueño:
 
 - **no edita, mueve ni borra archivos** — el `.env` lo borras tú, cuando compruebes que ya
   no hace falta;
@@ -299,14 +306,17 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 | Fase | Qué entra |
 |---|---|
 | **F0** | Este documento aprobado. Repo, `develop` + `main` protegida (§11.6). |
-| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver** y **descartar**. Sin escribir nada. Ya es útil solo. |
-| **F2** | **Guardar en la bóveda**, con la comprobación de colisión, y las **recetas** del §4.3 en pantalla. Sigue sin tocar un archivo. |
+| **F1** | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver**, **descartar** y **la receta para copiar** (§4.3). **Ninguna acción**: no toca la máquina y tampoco escribe en la bóveda. Ya es útil solo. |
+| **F2** | Primera acción: **guardar en la bóveda** (§4.2), con la comprobación de colisión. Sigue sin tocar un archivo de la máquina. |
 | **F3** | *(Solo si el dueño lo decide)* aplicar la receta por él: escribir el arranque, comprobar y retirar el original. Opt-in y por hallazgo. |
 | **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
 | **F5** | Revisar otra máquina del acta. |
 
-F1 se puede publicar solo: **enseñar el problema ya vale**, aunque el usuario todavía
-tenga que resolverlo a mano.
+F1 se puede publicar solo: **enseñar el problema y decir cómo se arregla ya vale**, aunque
+lo aplique el usuario a mano. Y es la manera de comprobar lo único que de verdad hay que
+comprobar antes de automatizar nada: que **las recetas sean correctas**. Si el Inspector
+las aplicara solo desde el primer día, cada receta equivocada sería un servicio caído en
+vez de un comando que no funciona.
 
 ## 8. Decisiones tomadas aquí
 
@@ -317,8 +327,9 @@ tenga que resolverlo a mano.
   una auditoría que no existe.
 - **Se levanta con `npx`** (§2). Sin binario empaquetado, sin instalador, sin Tauri ni SEA: la versión la lleva npm y actualizar es no hacer nada.
 - **Sin modo automático**, nunca (§5.6).
-- **Sugiere, no edita** (§4): no toca archivos, no arranca servicios, no borra el
-  original. Guardar en la bóveda sí, porque no edita nada de la máquina.
+- **F1 no ejecuta ninguna acción** (§4): ve, explica y sugiere. No toca archivos, no
+  arranca servicios y **tampoco escribe en la bóveda** — eso es F2. Las acciones se
+  diseñan ahora porque la receta que se sugiere tiene que ser la que un día se aplique.
 - **Los tres sistemas desde F1** (§3): cada tipo declara dónde mira en cada uno; el
   llavero del sistema no es un hallazgo y los permisos de Windows son su propio tipo.
 - **El Inspector no rota credenciales** (§4.4): protege con la bóveda, y para lo ya
