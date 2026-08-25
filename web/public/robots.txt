@@ -1,0 +1,3 @@
+# Herramienta interna del ecosistema (CONVENCIONES §7): no se indexa.
+User-agent: *
+Disallow: /
