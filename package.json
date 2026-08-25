@@ -1,6 +1,6 @@
 {
   "name": "@dotrino/inspector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Dotrino Inspector: te enseña qué credenciales tienes en claro en tu máquina y cómo protegerlas con tu bóveda. No edita nada.",
   "bin": {
