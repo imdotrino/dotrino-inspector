@@ -1,0 +1,36 @@
+# Publica la landing (CONVENCIONES §1.2) en inspector.dotrino.com.
+#
+# Es una página estática SIN build, pero va por Actions y no por rama porque
+# vive en `landing/` y no en la raíz: Pages por rama solo sirve `/` o `/docs`,
+# y la raíz de este repo es el CLI. `web/` es la UI local del Inspector y NO se
+# publica: se sirve desde la propia máquina del usuario.
+name: Deploy landing to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./landing
+      - id: deployment
+        uses: actions/deploy-pages@v4

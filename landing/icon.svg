@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0e1116"/>
+  <!-- Una lupa sobre un ojo de cerradura: mirar dónde están tus llaves. -->
+  <g fill="none" stroke="#4c8dff" stroke-width="34" stroke-linecap="round">
+    <circle cx="228" cy="228" r="108"/>
+    <path d="M306 306 L392 392"/>
+  </g>
+  <g fill="#4c8dff">
+    <circle cx="228" cy="206" r="34"/>
+    <path d="M228 232 L258 300 H198 Z"/>
+  </g>
+</svg>

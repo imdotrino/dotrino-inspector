@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e1116">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Dotrino Inspector — qué contraseñas tienes a la vista en tu computadora</title>
+<meta name="description" content="Te enseña qué contraseñas y llaves tienes guardadas a la vista en tu propia computadora, y te dice cómo protegerlas. Solo mira: no edita, no borra y nada de lo que encuentra sale de tu máquina." />
+<link rel="canonical" href="https://inspector.dotrino.com/" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_ES" />
+<meta property="og:locale:alternate" content="en_US" />
+<meta property="og:site_name" content="Dotrino" />
+<meta property="og:title" content="Dotrino Inspector — qué contraseñas tienes a la vista" />
+<meta property="og:description" content="Mira tu computadora y te enseña qué contraseñas y llaves están guardadas a la vista, con la receta para protegerlas. Nada de lo que encuentra sale de tu máquina." />
+<meta property="og:url" content="https://inspector.dotrino.com/" />
+<meta property="og:image" content="https://inspector.dotrino.com/og.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Dotrino Inspector — qué contraseñas tienes a la vista" />
+<meta name="twitter:description" content="Mira tu computadora y te enseña qué contraseñas y llaves están guardadas a la vista. Nada de lo que encuentra sale de tu máquina." />
+<meta name="twitter:image" content="https://inspector.dotrino.com/og.jpg" />
+<!-- Analítica cookieless autohosteada (GoatCounter); no cuenta en localhost/LAN. -->
+<script>window.goatcounter={path:function(p){return location.hostname+p}}</script>
+<script data-goatcounter="https://goat.dotrino.com/count" async src="https://goat.dotrino.com/count.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DeveloperApplication",
+  "name": "Dotrino Inspector",
+  "url": "https://inspector.dotrino.com/",
+  "description": "Herramienta de escritorio que enseña qué credenciales están guardadas en claro en la propia computadora y cómo protegerlas con la bóveda. Solo lee y nada sale de la máquina.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "publisher": { "@type": "Organization", "name": "Dotrino", "url": "https://dotrino.com/" }
+}
+</script>
+<style>
+  :root {
+    --accent: #4c8dff;
+    --bg: #0e1116;
+    --panel: #171c24;
+    --ink: #e7ecf3;
+    --muted: #93a1b5;
+    --line: #262e3a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 24px 20px 96px; }
+  /* La barra la trae <dotrino-topbar> (§5): layout, fila móvil y safe-area son
+     suyos. Aquí solo se le pasa la paleta de esta página. */
+  dotrino-topbar {
+    --dotrino-topbar-bg: rgba(23, 28, 36, .85);
+    --dotrino-topbar-border: #262e3a;
+    --dotrino-topbar-text: #e7ecf3;
+    --dotrino-topbar-muted: #93a1b5;
+    --dotrino-topbar-accent: #4c8dff;
+  }
+
+  .hero { text-align: center; padding: 32px 0 8px; }
+  .logo { width: 88px; height: 88px; border-radius: 22px; }
+  h1 { font-size: clamp(28px, 6vw, 40px); margin: 16px 0 6px; }
+  .tagline { color: var(--muted); font-size: 18px; margin: 0 auto; max-width: 46ch; }
+  h2 { font-size: 22px; margin: 40px 0 12px; }
+  p { margin: 12px 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin: 14px 0; }
+  .card h3 { margin: 0 0 6px; font-size: 17px; }
+  .card p { margin: 6px 0 12px; color: var(--muted); }
+  .ways { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  ul { margin: 12px 0; padding-left: 22px; }
+  li { margin: 6px 0; }
+  .cta { display: inline-block; margin: 6px 8px 6px 0; padding: 10px 18px; border-radius: 10px; background: var(--accent); color: #06101f; text-decoration: none; font-weight: 650; }
+  .cta.ghost { background: none; border: 1px solid var(--line); color: var(--ink); font-weight: 500; }
+  .promise { border-color: #2f4a2f; background: #121b12; }
+  footer { text-align: center; color: var(--muted); font-size: 14px; margin-top: 48px; }
+  [data-lang="en"] { display: none; }
+  html[lang="en"] [data-lang="es"] { display: none; }
+  html[lang="en"] [data-lang="en"] { display: revert; }
+</style>
+</head>
+<body>
+<!-- Barra estándar del ecosistema (CONVENCIONES §5): marca + idioma + support.
+     Sin `profile`: una landing de servicio no tiene usuario (§1.2). -->
+<dotrino-topbar
+  brand="Inspector"
+  icon="icon.svg"
+  no-back
+  support-repo="imdotrino/dotrino-inspector"
+  support-discord="https://discord.gg/D648uq7cth"></dotrino-topbar>
+
+<div class="wrap">
+  <div class="hero">
+    <img class="logo" src="icon.svg" alt="Dotrino Inspector" onerror="this.style.display='none'">
+    <h1>Dotrino Inspector</h1>
+    <p class="tagline" data-lang="es">Te enseña qué contraseñas y llaves tienes guardadas <b>a la vista</b> en tu computadora, y qué hacer con cada una.</p>
+    <p class="tagline" data-lang="en">It shows you which passwords and keys are sitting <b>in plain sight</b> on your computer, and what to do about each one.</p>
+    <p>
+      <a class="cta" href="https://wiki.dotrino.com/herramientas/inspector/" data-lang="es">Cómo instalarlo</a>
+      <a class="cta" href="https://wiki.dotrino.com/en/herramientas/inspector/" data-lang="en">How to install it</a>
+      <a class="cta ghost" href="https://github.com/imdotrino/dotrino-inspector">GitHub</a>
+    </p>
+  </div>
+
+  <section>
+    <div class="card">
+      <p data-lang="es">Con el tiempo se acumulan contraseñas escritas dentro de archivos: la de tu correo en la configuración de un programa, la llave de tu servidor sin proteger, la clave de un servicio de pago en una carpeta de trabajo, el historial de la terminal con una contraseña que escribiste una vez. El Inspector abre una ventana en tu computadora, las busca y te las enseña <b>una por una</b>, ordenadas por lo grave que es tenerlas ahí, con la explicación de por qué y los pasos para dejarlas guardadas donde deben.</p>
+      <p data-lang="en">Over time, passwords pile up inside files: your email password in a program's settings, your unprotected server key, a payment service key in a work folder, your terminal history with a password you typed once. The Inspector opens a window on your computer, finds them and shows them to you <b>one by one</b>, sorted by how bad it is to keep them there, with an explanation of why and the steps to store them where they belong.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-lang="es">Lo que promete, y lo cumple</h2>
+    <h2 data-lang="en">What it promises, and keeps</h2>
+    <div class="card promise">
+      <ul data-lang="es">
+        <li><b>Solo mira.</b> No edita, no mueve, no borra archivos y no arranca nada. La receta la aplicas tú, cuando quieras y si quieres.</li>
+        <li><b>Nada de lo que encuentra sale de tu máquina.</b> Ni informes, ni estadísticas, ni «mándanos el hallazgo»: ningún servidor se entera nunca de qué se halló ni de dónde.</li>
+        <li><b>Nada automático.</b> No tiene modo «arréglalo todo», ni siquiera para quien lo pida.</li>
+      </ul>
+      <ul data-lang="en">
+        <li><b>It only looks.</b> It never edits, moves or deletes files, and never starts anything. You apply the recipe, when and if you want to.</li>
+        <li><b>Nothing it finds leaves your machine.</b> No reports, no statistics, no "send us the finding": no server ever learns what was found or where.</li>
+        <li><b>Nothing automatic.</b> There is no "fix everything" mode, not even opt-in.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-lang="es">Qué busca</h2>
+    <h2 data-lang="en">What it looks for</h2>
+    <ul data-lang="es">
+      <li>Contraseñas y claves guardadas dentro de archivos de configuración de tus proyectos.</li>
+      <li>Llaves de acceso a tus servidores, sobre todo las que están sin protección.</li>
+      <li>Credenciales de servicios en la nube y de tiendas de aplicaciones.</li>
+      <li>Sesiones y contraseñas que quedaron guardadas por programas que usas a diario.</li>
+      <li>Contraseñas que escribiste en la terminal y siguen en su historial.</li>
+      <li>Archivos con secretos que además están <b>a la vista de cualquiera</b> que use esa computadora, o que se subieron sin querer a un repositorio.</li>
+    </ul>
+    <ul data-lang="en">
+      <li>Passwords and keys stored inside your projects' configuration files.</li>
+      <li>Keys that open your servers, especially the unprotected ones.</li>
+      <li>Cloud service and app store credentials.</li>
+      <li>Sessions and passwords left behind by programs you use every day.</li>
+      <li>Passwords you typed in the terminal that are still in its history.</li>
+      <li>Files with secrets that are also <b>readable by anyone</b> using that computer, or that were pushed to a repository by mistake.</li>
+    </ul>
+    <p data-lang="es">Lo que <b>no</b> es: ni un antivirus, ni una auditoría, ni un arreglador automático. Mira archivos tuyos y cómo están guardados; nada más.</p>
+    <p data-lang="en">What it is <b>not</b>: not an antivirus, not an audit, not an automatic fixer. It looks at your files and how they are stored; nothing else.</p>
+  </section>
+
+  <section>
+    <h2 data-lang="es">Cómo se pone en marcha</h2>
+    <h2 data-lang="en">How to get it running</h2>
+    <div class="ways">
+      <div class="card">
+        <h3 data-lang="es">Con un comando</h3>
+        <h3 data-lang="en">With one command</h3>
+        <p data-lang="es">Se abre en su propia ventana y se cierra cuando la cierras. No deja nada instalado.</p>
+        <p data-lang="en">It opens in its own window and shuts down when you close it. Nothing stays installed.</p>
+        <a class="cta ghost" href="https://wiki.dotrino.com/herramientas/inspector/" data-lang="es">Cómo instalar</a>
+        <a class="cta ghost" href="https://wiki.dotrino.com/en/herramientas/inspector/" data-lang="en">How to install</a>
+      </div>
+      <div class="card">
+        <h3 data-lang="es">Si te falta algo</h3>
+        <h3 data-lang="en">If something is missing</h3>
+        <p data-lang="es">El instalador de Dotrino se encarga de lo que haga falta, sin pedirte permisos de administrador.</p>
+        <p data-lang="en">The Dotrino installer takes care of what's missing, without asking for admin rights.</p>
+        <a class="cta ghost" href="https://wiki.dotrino.com/herramientas/instalar/" data-lang="es">Cómo instalar</a>
+        <a class="cta ghost" href="https://wiki.dotrino.com/en/herramientas/instalar/" data-lang="en">How to install</a>
+      </div>
+      <div class="card">
+        <h3 data-lang="es">Desde la terminal</h3>
+        <h3 data-lang="en">From the terminal</h3>
+        <p data-lang="es">En una computadora sin escritorio también da su informe, escrito en la propia terminal.</p>
+        <p data-lang="en">On a computer with no desktop it still gives you its report, written in the terminal itself.</p>
+        <a class="cta ghost" href="https://wiki.dotrino.com/herramientas/inspector/" data-lang="es">Cómo usarlo</a>
+        <a class="cta ghost" href="https://wiki.dotrino.com/en/herramientas/inspector/" data-lang="en">How to use it</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-lang="es">Y después, tu bóveda</h2>
+    <h2 data-lang="en">And then, your vault</h2>
+    <div class="card">
+      <p data-lang="es">El Inspector es el paso de antes: te enseña el problema. Guardar bien esas contraseñas es de <a href="https://vault.dotrino.com/">tu bóveda</a>, que las entrega a cada programa cuando arranca, sin que queden escritas en ningún archivo.</p>
+      <p data-lang="en">The Inspector is the step before: it shows you the problem. Storing those passwords properly is <a href="https://vault.dotrino.com/">your vault</a>'s job — it hands them to each program at startup, so they are never written down in a file.</p>
+      <a class="cta ghost" href="https://wiki.dotrino.com/vault/modelo/" data-lang="es">Qué es la bóveda</a>
+      <a class="cta ghost" href="https://wiki.dotrino.com/en/vault/modelo/" data-lang="en">What the vault is</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>MIT · <span data-lang="es">parte del ecosistema</span><span data-lang="en">part of the</span> <a href="https://dotrino.com/">Dotrino</a><span data-lang="en"> ecosystem</span>.</p>
+  </footer>
+</div>
+
+<!-- OJO: por CDN el topbar va SIEMPRE con `+esm` (sus imports desnudos no
+     resuelven en el navegador). Trae dentro nav + support. -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@dotrino/topbar@0.8/+esm"></script>
+</body>
+</html>
