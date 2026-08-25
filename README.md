@@ -15,8 +15,9 @@ automático. **Lo que encuentra no se lo cuenta a nadie**: no hay telemetría ni
 remotos, hoy no abre una sola conexión, y el día que pueda guardar en tu bóveda solo
 viajará el secreto que tú mandes, sellado para ella.
 
-Documentación de uso: `wiki.dotrino.com` *(pendiente, F4)*. Diseño y decisiones:
-[`docs/DISENO.md`](./docs/DISENO.md).
+Página pública: [`inspector.dotrino.com`](https://inspector.dotrino.com/). Documentación
+de uso: [wiki.dotrino.com/herramientas/inspector](https://wiki.dotrino.com/herramientas/inspector/).
+Diseño y decisiones: [`docs/DISENO.md`](./docs/DISENO.md).
 
 ## Qué busca
 

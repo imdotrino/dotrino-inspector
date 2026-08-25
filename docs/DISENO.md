@@ -370,7 +370,7 @@ La app lleva identidad como todas (§6.1) y el aparato se enrola con `@dotrino/r
 | **F1** ✅ | `npx @dotrino/inspector` levantando la UI + motor de detección (catálogo §3, **Linux, macOS y Windows**) + **ver**, **descartar** y **la receta para copiar** (§4.3). **Ninguna acción**: no toca la máquina y tampoco escribe en la bóveda. Ya es útil solo. |
 | **F2** | Primera acción: **guardar en la bóveda** (§4.2), con la comprobación de colisión. Sigue sin tocar un archivo de la máquina. |
 | **F3** | *(Solo si el dueño lo decide)* aplicar la receta por él: escribir el arranque, comprobar y retirar el original. Opt-in y por hallazgo. |
-| **F4** | Landing en `inspector.dotrino.com` (§1.2) con el `npx` y el instalador universal, página en el wiki (§9.2), alta en el catálogo (§11.4). |
+| **F4** ✅ | Landing en `inspector.dotrino.com` (§1.2), página en el wiki (§9.2) y alta en el catálogo (§11.4). La landing **no documenta** (§9.2 endurecido): presenta, promete y enlaza «Cómo instalar» al wiki por cada vía; el `npx`, el instalador universal y las opciones viven en [la página del wiki](https://wiki.dotrino.com/herramientas/inspector/). Vive en `landing/` y no en `web/` —que aquí es la UI local— y se publica por Actions, porque Pages por rama solo sirve `/` o `/docs`. |
 | **F5** | Revisar otra máquina del acta. |
 
 F1 se puede publicar solo: **enseñar el problema y decir cómo se arregla ya vale**, aunque
