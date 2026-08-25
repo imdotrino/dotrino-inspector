@@ -7,6 +7,7 @@
 import { spawn } from 'node:child_process'
 import { platform } from 'node:os'
 import { createInspectorServer } from '../src/server.js'
+import { openAppWindow } from '../src/window.js'
 import { scan, currentSystem } from '../src/scan/index.js'
 import { recipeFor } from '../src/recipes.js'
 import { finalSeverity, sortFindings, groupFindings } from '../src/severity.js'
@@ -27,7 +28,8 @@ if (has('-h', '--help')) {
   npx @dotrino/inspector --print        el informe por la terminal, sin UI
 
   --port <n>      puerto del servidor local (por defecto, uno libre)
-  --no-open       no abrir el navegador; imprime la dirección
+  --browser       abrirlo en el navegador, no en su propia ventana
+  --no-open       no abrir nada; imprime la dirección
   --no-known      no mirar las ubicaciones conocidas (~/.ssh, ~/.aws…)
 
 Solo lee. No edita, no borra y no arranca servicios: te dice qué hacer y lo haces tú.`)
@@ -76,8 +78,19 @@ On a server, use the terminal report instead:  npx @dotrino/inspector --print`)
   const url = `http://127.0.0.1:${addr.port}/?t=${app.launchToken}`
 
   console.log(`Dotrino Inspector on ${url}`)
-  console.log('Only reads. Nothing leaves this machine. Ctrl+C closes it.')
-  if (!has('--no-open')) openBrowser(url)
+
+  // Su propia ventana por defecto: es una herramienta de escritorio, no una
+  // pestaña. Si no hay Chromium en la máquina, el navegador de siempre.
+  const window = has('--no-open', '--browser') ? null : openAppWindow(url)
+  if (window) {
+    console.log('Only reads. Nothing leaves this machine. Closing the window closes it.')
+    // La ventana ES la aplicación: al cerrarla no queda un servidor con los
+    // secretos de la máquina a un puerto de distancia (DISENO §2).
+    window.on('exit', async () => { await app.close(); process.exit(0) })
+  } else {
+    console.log('Only reads. Nothing leaves this machine. Ctrl+C closes it.')
+    if (!has('--no-open')) openBrowser(url)
+  }
 
   for (const sig of ['SIGINT', 'SIGTERM']) {
     process.on(sig, async () => { await app.close(); process.exit(0) })

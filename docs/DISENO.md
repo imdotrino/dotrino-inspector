@@ -75,6 +75,25 @@ quien no tenga Node lo bootstrapea el instalador universal (`dotrino.com/install
 Sigue siendo **una herramienta de escritorio, no de servidor**: asume una sesión gráfica
 para abrir su ventana, y si no la hay lo dice en vez de arrancar a medias.
 
+**Y abre en SU PROPIA VENTANA, no en una pestaña** (pedido del dueño el 2026-08-25). Una
+herramienta que enseña las credenciales que tienes en claro no es una pestaña más entre
+veinte: tiene que verse y cerrarse como una aplicación. Se consigue con el **modo
+aplicación de Chromium** (`--app=`), que ya está instalado en la máquina del usuario:
+ventana sin barra de direcciones ni pestañas, con **perfil temporal propio** (sin
+extensiones ni sesiones heredadas, y se borra al cerrar) y, en Linux, su propio
+`--class` para que el conmutador de tareas la nombre Inspector y no Chrome.
+
+Tres consecuencias, y las tres son a favor:
+
+- **No se descarga nada.** Un webview nativo o Electron no encajan aquí: esto corre con
+  `npx`, y las convenciones §1.1 obligan a `ignore-scripts=true`, así que un módulo con
+  binario por `postinstall` **no llegaría a instalarse** en la máquina del usuario. Esto
+  no contradice el «nada de Tauri» de arriba: no añade toolchain ninguno.
+- **La ventana ES la aplicación**: al cerrarla se apaga el servidor local. Antes había
+  que acordarse del Ctrl+C, y hasta entonces quedaba un puerto con los hallazgos detrás.
+- **Si no hay ningún Chromium**, cae al navegador de siempre exactamente como antes; y
+  `--browser` fuerza ese camino a propósito.
+
 Lo que eso decide de una vez:
 
 - **Nada de Tauri, nada de SEA, nada de `.deb`/`.exe`.** Un binario empaquetado no

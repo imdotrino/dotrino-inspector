@@ -48,6 +48,10 @@ npm run build            # compila la UI (web/) a web/dist
 node bin/dotrino-inspector.js --no-open
 ```
 
+La UI abre en **su propia ventana** (modo aplicación de Chromium, con perfil temporal que
+se borra al cerrar); cerrarla apaga el servidor. `--browser` la abre en el navegador de
+siempre y `--no-open` no abre nada e imprime la dirección.
+
 El servidor local escucha **solo en `127.0.0.1`**, el token de la URL es de un solo uso
 (se canjea por uno de sesión y se invalida) y **muere con el comando**.
 
