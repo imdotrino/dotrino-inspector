@@ -68,7 +68,7 @@ npx @dotrino/inspector
 
 El comando levanta un servidor **solo en `127.0.0.1`** y abre la UI en el escritorio del
 usuario. No hay instalador que descargar, no hay binario que firmar, no hay toolchain
-nuevo: es el mismo patrón de `npx dotrino-content` y `npx @dotrino/terminal-agent`, y a
+nuevo: es el mismo patrón de `npx @dotrino/content` y `npx @dotrino/terminal-agent`, y a
 quien no tenga Node lo bootstrapea el instalador universal (`dotrino.com/install.sh`,
 `install.ps1`), que ya existe y es reutilizable por cualquier app.
 
