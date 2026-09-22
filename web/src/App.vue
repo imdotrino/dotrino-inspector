@@ -74,10 +74,12 @@ async function setDismissed (f, dismissed) {
 </script>
 
 <template>
-  <!-- Sin `profile`: el perfil vive en el vault del usuario y hablarle sería salir a la
-       red, que es justo lo que el Inspector promete no hacer (DISENO §5.1). Y
+  <!-- `profile` sin `.identity`: el botón solo lleva a profile.dotrino.com, sin hablarle
+       al vault, porque salir a la red es justo lo que el Inspector promete no hacer
+       (DISENO §5.1). Y
        `support-no-count` porque la moneda registra su apertura en el store compartido. -->
   <dotrino-topbar
+    profile
     no-back
     support-no-count
     :lang="lang"
