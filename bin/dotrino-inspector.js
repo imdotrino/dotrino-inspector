@@ -36,8 +36,19 @@ Solo lee. No edita, no borra y no arranca servicios: te dice qué hacer y lo hac
   process.exit(0)
 }
 
-if (has('--print')) await printReport()
-else await serve()
+if (has('--print')) { await printReport(); await updateNotice() } else { await serve(); await updateNotice() }
+
+// §15: por stderr y con caché de un día. En `serve` sale al arrancar, mientras la ventana
+// sigue abierta; en `--print`, al terminar el informe.
+async function updateNotice () {
+  const { printUpdateNotice } = await import('@dotrino/update/notice')
+  const { readFileSync } = await import('node:fs')
+  const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  await printUpdateNotice({
+    current: version, source: 'npm', pkg: '@dotrino/inspector', product: 'dotrino-inspector',
+    how: 'run it with: npx @dotrino/inspector@latest'
+  })
+}
 
 async function printReport () {
   const system = currentSystem()
