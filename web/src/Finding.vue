@@ -109,7 +109,7 @@ h2 { font-size: 1rem; margin: 0; font-weight: 620; }
 h3 { font-size: .92rem; margin: 0 0 .6rem; color: var(--dim); font-weight: 600; }
 .sev {
   font-size: .7rem; text-transform: uppercase; letter-spacing: .06em;
-  padding: .2rem .45rem; border-radius: .3rem; background: #0d1219; color: var(--low);
+  padding: .2rem .45rem; border-radius: .3rem; background: var(--dt-surface-2); color: var(--low);
   white-space: nowrap; margin-top: .15rem;
 }
 .high .sev { color: var(--high); }
@@ -122,25 +122,25 @@ h3 { font-size: .92rem; margin: 0 0 .6rem; color: var(--dim); font-weight: 600; 
 .why { margin: .6rem 0 0; font-size: .93rem; }
 .note {
   margin: .55rem 0 0; padding: .5rem .7rem; border-radius: .45rem;
-  font-size: .88rem; background: #0d1219; border: 1px solid var(--line);
+  font-size: .88rem; background: var(--dt-surface-2); border: 1px solid var(--line);
 }
-.note.danger { border-color: #5b2126; background: #1d1214; color: #ffc4c4; }
-.note.warn { border-color: #4a3a1a; background: #1b1710; color: #f0d4a4; }
+.note.danger { border-color: var(--dt-error); background: var(--dt-error-soft); color: var(--dt-error-ink); }
+.note.warn { border-color: var(--dt-busy); background: var(--dt-surface-2); color: var(--dt-text); }
 .body { margin-top: .9rem; border-top: 1px solid var(--line); padding-top: .85rem; }
 .steps { margin: 0; padding-left: 1.2rem; }
 .steps li { margin-bottom: .9rem; }
 .steps p { margin: 0 0 .35rem; font-size: .92rem; }
 .code { display: flex; gap: .5rem; align-items: flex-start; }
 pre {
-  flex: 1 1 auto; margin: 0; background: #0b0f15; border: 1px solid var(--line);
+  flex: 1 1 auto; margin: 0; background: var(--dt-surface-3); border: 1px solid var(--line);
   border-radius: .45rem; padding: .55rem .7rem; overflow-x: auto; font-size: .85rem;
 }
 .hint { color: var(--dim); font-size: .85rem; margin: .3rem 0 0; }
 .occ {
   list-style: none; margin: 0 0 .9rem; padding: .5rem .7rem;
-  background: #0d1219; border: 1px solid var(--line); border-radius: .45rem;
+  background: var(--dt-surface-2); border: 1px solid var(--line); border-radius: .45rem;
   color: var(--dim); font-size: .85rem;
 }
 footer { margin-top: .9rem; }
-:deep(code) { background: #0b0f15; padding: .05rem .3rem; border-radius: .25rem; font-size: .88em; }
+:deep(code) { background: var(--dt-surface-3); padding: .05rem .3rem; border-radius: .25rem; font-size: .88em; }
 </style>

@@ -79,7 +79,7 @@ async function setDismissed (f, dismissed) {
        (DISENO §5.1). Y
        `support-no-count` porque la moneda registra su apertura en el store compartido. -->
   <dotrino-topbar
-    profile
+    profile theme
     no-back
     support-no-count
     :lang="lang"
@@ -147,26 +147,26 @@ async function setDismissed (f, dismissed) {
 
 <style>
 :root {
-  color-scheme: dark;
-  --bg: #0e1116;
-  --panel: #171c24;
-  --line: #262e3a;
-  --ink: #e7ecf3;
-  --dim: #93a1b5;
-  --blue: #4c8dff;
-  --high: #ff6b6b;
-  --medium: #ffb454;
-  --low: #7f8ea5;
+  /* Colores del ecosistema (@dotrino/theme, CONVENCIONES §5). */
+  --bg: var(--dt-bg);
+  --panel: var(--dt-surface);
+  --line: var(--dt-line-soft);
+  --ink: var(--dt-text);
+  --dim: var(--dt-text-dim);
+  --blue: var(--dt-accent);
+  --high: var(--dt-error);
+  --medium: var(--dt-busy);
+  --low: var(--dt-text-faint);
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.55 var(--dt-font);
   -webkit-tap-highlight-color: transparent;
 }
-code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code, pre { font-family: var(--dt-font-mono); }
 main {
   max-width: 62rem;
   margin: 0 auto;
@@ -180,7 +180,7 @@ main {
   font-size: .93rem;
 }
 .error {
-  background: #2a1416; border: 1px solid #5b2126; color: #ffb3b3;
+  background: var(--dt-error-soft); border: 1px solid var(--dt-error); color: var(--dt-error-ink);
   padding: .7rem .9rem; border-radius: .5rem;
 }
 .scope {
@@ -190,7 +190,7 @@ main {
 .row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
 .check { display: flex; gap: .5rem; align-items: center; cursor: pointer; flex: 1 1 auto; }
 .go {
-  background: var(--blue); color: #06101f; border: 0; font-weight: 650;
+  background: var(--blue); color: var(--dt-accent-ink); border: 0; font-weight: 650;
   padding: .55rem 1.1rem; border-radius: .5rem; cursor: pointer; font-size: .95rem;
 }
 .go:disabled { opacity: .55; cursor: default; }
@@ -199,7 +199,7 @@ main {
 .roots code { color: var(--dim); overflow-wrap: anywhere; }
 .add { margin-top: .75rem; }
 .add input {
-  flex: 1 1 16rem; background: #0d1219; border: 1px solid var(--line);
+  flex: 1 1 16rem; background: var(--dt-surface-2); border: 1px solid var(--line);
   color: var(--ink); padding: .5rem .65rem; border-radius: .45rem; font-size: .92rem;
 }
 .link {
