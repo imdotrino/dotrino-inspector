@@ -7,9 +7,14 @@
 // allá, se corrige aquí, no se inventa una variante.
 import { basename, dirname, sep } from 'node:path'
 
+/** @param {string} s */
 const q = s => (/[^\w@%+=:,./-]/.test(s) ? `'${s.replace(/'/g, "'\\''")}'` : s)
 
 /** Nombre de cajón propuesto a partir de la ruta: el del proyecto, en minúsculas. */
+/**
+ * @param {string} file
+ * @returns {string}
+ */
 export function suggestNamespace (file) {
   const dir = dirname(file)
   const parts = dir.split(sep).filter(Boolean)
@@ -18,15 +23,27 @@ export function suggestNamespace (file) {
 }
 
 /** Nombre de variable para una llave SSH: SSH_KEY_<ARCHIVO>. */
+/**
+ * @param {string} file
+ * @returns {string}
+ */
 export function suggestKeyName (file) {
   const b = basename(file).replace(/\.(pem|key)$/i, '')
   return 'SSH_KEY_' + b.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '')
 }
 
+/**
+ * @param {string} file
+ * @param {import('./types.js').System} system
+ */
 const b64 = (file, system) => system === 'win32'
   ? `[Convert]::ToBase64String([IO.File]::ReadAllBytes("${file}"))`
   : system === 'darwin' ? `base64 -i ${q(file)}` : `base64 -w0 ${q(file)}`
 
+/**
+ * @param {string} ns
+ * @returns {import('./types.js').RecipeStep[]}
+ */
 const enroll = ns => [
   { code: `dotrino-vault pair --service ${ns} --scope secrets:${ns}`, note: { es: 'en la máquina donde vive tu bóveda: te da una invitación', en: 'on the machine where your vault lives: it gives you an invitation' } },
   { code: `npx -y @dotrino/env enroll --ns ${ns} --code <invitación>`, note: { es: 'una sola vez por máquina', en: 'once per machine' } }
@@ -36,13 +53,19 @@ const CHECK = {
   es: 'Comprueba que arranca así. **Esto lo haces tú**: el Inspector no ejecuta nada.',
   en: 'Check that it starts this way. **This part is yours**: the Inspector runs nothing.'
 }
+/**
+ * @param {string} file
+ * @returns {import('./types.js').Text}
+ */
 const REMOVE = file => ({
   es: `Cuando arranque bien, borra \`${file}\`. Hasta entonces déjalo donde está.`,
   en: `Once it starts fine, delete \`${file}\`. Until then leave it where it is.`
 })
 
 /**
- * @returns {{title:{es,en}, steps:Array<{text?:{es,en}, code?:string, note?:{es,en}}>}|null}
+ * @param {import('./types.js').Finding & { occurrences?: import('./types.js').Occurrence[] }} finding
+ * @param {import('./types.js').System} [system]
+ * @returns {import('./types.js').Recipe | null}
  */
 export function recipeFor (finding, system = 'linux') {
   const f = finding
@@ -217,7 +240,12 @@ export function recipeFor (finding, system = 'linux') {
   }
 }
 
-/** Lo que se dice cuando el archivo está, además, seguido por git (DISENO §4.4). */
+/**
+ * Lo que se dice cuando el archivo está, además, seguido por git (DISENO §4.4).
+ *
+ * @param {string} kind
+ * @returns {import('./types.js').ExposureNote | null}
+ */
 export function exposureNote (kind) {
   switch (kind) {
     case 'tracked-by-git':

@@ -6,7 +6,8 @@
   "description": "UI del Inspector: la lista de hallazgos y su receta. La sirve el propio comando.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@dotrino/store": "0.12.3",
@@ -16,6 +17,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.2.1",
-    "vite": "5.4.10"
+    "typescript": "5.9.3",
+    "vite": "5.4.10",
+    "vue-tsc": "3.3.13"
   }
 }

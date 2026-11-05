@@ -7,7 +7,7 @@ export const messages = {
     scanFirst: 'Revisar esta máquina',
     empty: 'Nada en claro por aquí.',
     emptyHint: 'Ningún archivo de los que se miraron tiene una credencial a la vista.',
-    summary: ({ n, files }) => `${n} ${n === 1 ? 'hallazgo' : 'hallazgos'} · ${files} archivos mirados`,
+    summary: (/** @type {{ n: number, files: number }} */ { n, files }) => `${n} ${n === 1 ? 'hallazgo' : 'hallazgos'} · ${files} archivos mirados`,
     severity: { high: 'Grave', medium: 'Atención', low: 'Menor' },
     onlyReads: 'Solo lee. No edita, no borra y no arranca nada: la receta la aplicas tú.',
     scope: 'Dónde mirar',
@@ -23,11 +23,11 @@ export const messages = {
     dismiss: 'Esto está bien así',
     dismissed: 'Descartado',
     undismiss: 'Volver a mostrarlo',
-    showDismissed: n => `Ver ${n} descartado${n === 1 ? '' : 's'}`,
+    showDismissed: (/** @type {number} */ n) => `Ver ${n} descartado${n === 1 ? '' : 's'}`,
     hideDismissed: 'Ocultar los descartados',
     noRecipe: 'Para esto todavía no hay receta. Sé encontrarlo, pero no sé decirte cómo recablearlo sin arriesgarme a romperte algo.',
     line: 'línea',
-    times: n => `${n} veces en este archivo`,
+    times: (/** @type {number} */ n) => `${n} veces en este archivo`,
     types: {
       dotenv: 'Secreto en un archivo .env',
       'ssh-private-key': 'Llave privada con frase',
@@ -46,7 +46,7 @@ export const messages = {
     scanFirst: 'Check this machine',
     empty: 'Nothing in the clear here.',
     emptyHint: 'None of the files that were checked has a credential in plain sight.',
-    summary: ({ n, files }) => `${n} ${n === 1 ? 'finding' : 'findings'} · ${files} files checked`,
+    summary: (/** @type {{ n: number, files: number }} */ { n, files }) => `${n} ${n === 1 ? 'finding' : 'findings'} · ${files} files checked`,
     severity: { high: 'Serious', medium: 'Worth a look', low: 'Minor' },
     onlyReads: 'It only reads. It does not edit, delete or start anything: you apply the recipe.',
     scope: 'Where to look',
@@ -62,11 +62,11 @@ export const messages = {
     dismiss: 'This is fine as it is',
     dismissed: 'Dismissed',
     undismiss: 'Show it again',
-    showDismissed: n => `Show ${n} dismissed`,
+    showDismissed: (/** @type {number} */ n) => `Show ${n} dismissed`,
     hideDismissed: 'Hide dismissed',
     noRecipe: 'No recipe for this one yet. I can find it, but I cannot tell you how to rewire it without risking breaking something.',
     line: 'line',
-    times: n => `${n} times in this file`,
+    times: (/** @type {number} */ n) => `${n} times in this file`,
     types: {
       dotenv: 'Secret in a .env file',
       'ssh-private-key': 'Private key with a passphrase',
@@ -81,6 +81,7 @@ export const messages = {
   }
 }
 
+/** @returns {'es'|'en'} */
 export function detectLang () {
   try {
     const saved = localStorage.getItem('dotrino-lang')

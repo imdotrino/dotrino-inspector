@@ -39,6 +39,9 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+      # Tipos estrictos (tsc + vue-tsc de la UI) antes de publicar. Después del build,
+      # que es el que instala las dependencias de web/.
+      - run: npm run type-check
 
       # LAS PRUEBAS ANTES DE PUBLICAR. Una versión que no pasa su suite no llega a npm.
       - run: npm test

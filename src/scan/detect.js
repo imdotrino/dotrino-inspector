@@ -4,6 +4,10 @@ import { createHash } from 'node:crypto'
 
 // El valor NUNCA se guarda ni se enseña. Lo único que sale del scanner es esta huella,
 // que sirve para distinguir dos hallazgos y para nada más (DISENO §3, §5).
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 export function fingerprint (value) {
   return createHash('sha256').update(String(value)).digest('hex').slice(0, 8)
 }
@@ -27,7 +31,12 @@ const KNOWN_PREFIXES = [
   ['hf_', 'Hugging Face']
 ]
 
-/** Devuelve el nombre del proveedor si el valor lleva un prefijo conocido. */
+/**
+ * Devuelve el nombre del proveedor si el valor lleva un prefijo conocido.
+ *
+ * @param {unknown} value
+ * @returns {string | null}
+ */
 export function providerOf (value) {
   const v = String(value)
   for (const [prefix, name] of KNOWN_PREFIXES) if (v.startsWith(prefix)) return name
@@ -43,7 +52,12 @@ const NOT_SECRET_NAME = /(?:^|_|-)(?:public|pub|url|uri|endpoint|host|port|user|
 // Valores que son claramente un hueco por rellenar, no una credencial.
 const PLACEHOLDER = /^(?:|-|x{3,}|\.{3,}|changeme|change_me|your[-_ ]?\w*|<[^>]*>|\$\{[^}]*\}|todo|tbd|none|null|nil|undefined|true|false|test|example|sample|dummy|placeholder|secret|password|123+|abc+)$/i
 
-/** Entropía de Shannon por carácter. Un token real ronda 3.5–5; una palabra, 2–3. */
+/**
+ * Entropía de Shannon por carácter. Un token real ronda 3.5–5; una palabra, 2–3.
+ *
+ * @param {unknown} value
+ * @returns {number}
+ */
 export function entropy (value) {
   const s = String(value)
   if (!s.length) return 0
@@ -60,6 +74,10 @@ export function entropy (value) {
 /**
  * ¿Este par clave/valor es un secreto?
  * Devuelve null si no lo es, o { confidence, provider, reason } si lo es.
+ *
+ * @param {unknown} key
+ * @param {unknown} value
+ * @returns {{ confidence: 'high' | 'low', provider: string | null, reason: string } | null}
  */
 export function classify (key, value) {
   const k = String(key || '')
@@ -93,8 +111,14 @@ export function classify (key, value) {
   return null
 }
 
-/** Pares CLAVE=valor de un archivo tipo .env, con su número de línea. */
+/**
+ * Pares CLAVE=valor de un archivo tipo .env, con su número de línea.
+ *
+ * @param {unknown} text
+ * @returns {{ key: string, value: string, line: number }[]}
+ */
 export function parseEnv (text) {
+  /** @type {{ key: string, value: string, line: number }[]} */
   const out = []
   const lines = String(text).split(/\r?\n/)
   for (let i = 0; i < lines.length; i++) {

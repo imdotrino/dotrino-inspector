@@ -1,6 +1,6 @@
 {
   "name": "@dotrino/inspector",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "Dotrino Inspector: te enseña qué credenciales tienes en claro en tu máquina y cómo protegerlas con tu bóveda. No edita nada.",
   "bin": {
@@ -10,7 +10,8 @@
     "start": "node bin/dotrino-inspector.js",
     "scan": "node bin/dotrino-inspector.js --print",
     "build": "cd web && npm install && npm run build",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "type-check": "tsc --noEmit && npm --prefix web run type-check"
   },
   "engines": {
     "node": ">=20"
@@ -32,5 +33,9 @@
   ],
   "dependencies": {
     "@dotrino/update": "0.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "typescript": "5.9.3"
   }
 }

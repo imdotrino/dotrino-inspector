@@ -14,7 +14,9 @@ import { finalSeverity, sortFindings, groupFindings } from '../src/severity.js'
 import { load as loadState, applyDismissed } from '../src/state.js'
 
 const argv = process.argv.slice(2)
+/** @param {...string} names */
 const has = (...names) => names.some(n => argv.includes(n))
+/** @param {string} name */
 const valueOf = name => {
   const i = argv.indexOf(name)
   return i >= 0 ? argv[i + 1] : undefined
@@ -62,6 +64,7 @@ async function printReport () {
     console.log(`Nada en claro por aquí. ${result.scanned} archivos mirados.`)
     return
   }
+  /** @type {Record<string, string>} */
   const mark = { high: '!!', medium: '! ', low: '  ' }
   console.log(`${findings.length} hallazgos · ${result.scanned} archivos mirados\n`)
   for (const f of findings) {
@@ -116,6 +119,7 @@ function hasDesktop () {
   return !!(process.env.DISPLAY || process.env.WAYLAND_DISPLAY)
 }
 
+/** @param {string} url */
 function openBrowser (url) {
   const p = platform()
   const [cmd, args] = p === 'darwin'

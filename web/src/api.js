@@ -3,9 +3,15 @@
 // sessionStorage (y muere al cerrar la pestaña, como el servidor).
 const KEY = 'dotrino-inspector-session'
 
+/** @type {string | null} */
 let token = null
 try { token = sessionStorage.getItem(KEY) } catch {}
 
+/**
+ * Canjea el token de arranque por uno de sesión y trae el contexto de la máquina.
+ *
+ * @returns {Promise<{ system: string, home: string, version: string, known: string[] }>}
+ */
 export async function connect () {
   const url = new URL(location.href)
   const t = url.searchParams.get('t')
@@ -15,13 +21,18 @@ export async function connect () {
     const r = await fetch('/api/session', { method: 'POST', body: JSON.stringify({ t }) })
     if (r.ok) {
       token = (await r.json()).token
-      try { sessionStorage.setItem(KEY, token) } catch {}
+      try { sessionStorage.setItem(KEY, String(token)) } catch {}
     }
   }
   if (!token) throw new Error('no session')
   return api('/api/context')
 }
 
+/**
+ * @param {string} path
+ * @param {unknown} [body]  con cuerpo es POST
+ * @returns {Promise<any>} el JSON de la respuesta
+ */
 export async function api (path, body) {
   const r = await fetch(path, {
     method: body ? 'POST' : 'GET',
@@ -32,7 +43,13 @@ export async function api (path, body) {
   return r.json()
 }
 
-/** El recorrido llega por trozos: progreso mientras pasa y el resultado al final. */
+/**
+ * El recorrido llega por trozos: progreso mientras pasa y el resultado al final.
+ *
+ * @param {{ roots?: string[], known?: boolean }} what
+ * @param {{ onProgress?: (p: import('./types.js').ScanProgress) => void, onDone?: (d: import('./types.js').ScanDone) => void, onError?: (e: Error) => void }} on
+ * @returns {() => void} cómo pararlo
+ */
 export function scan ({ roots = [], known = true }, { onProgress, onDone, onError }) {
   const params = new URLSearchParams({ roots: roots.join('\n'), known: known ? '1' : '0' })
   const ctrl = new AbortController()
@@ -41,6 +58,7 @@ export function scan ({ roots = [], known = true }, { onProgress, onDone, onErro
     signal: ctrl.signal
   }).then(async r => {
     if (!r.ok) throw new Error('scan failed')
+    if (!r.body) throw new Error('scan failed: empty response')
     const reader = r.body.getReader()
     const dec = new TextDecoder()
     let buf = ''

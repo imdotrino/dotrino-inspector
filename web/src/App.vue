@@ -8,15 +8,18 @@ import Finding from './Finding.vue'
 const lang = ref(detectLang())
 const t = computed(() => messages[lang.value])
 
+/** @type {import('vue').Ref<Awaited<ReturnType<typeof connect>> | null>} */
 const ctx = ref(null)
 const error = ref('')
 const busy = ref(false)
 const progress = ref('')
+/** @type {import('vue').Ref<import('./types.js').UiFinding[]>} */
 const findings = ref([])
 const scanned = ref(0)
 const ran = ref(false)
 const showDismissed = ref(false)
 
+/** @type {import('vue').Ref<string[]>} */
 const roots = ref(load('dotrino-inspector-roots', []))
 const known = ref(true)
 const newRoot = ref('')
@@ -24,18 +27,25 @@ const newRoot = ref('')
 const live = computed(() => findings.value.filter(f => !f.dismissed))
 const buried = computed(() => findings.value.filter(f => f.dismissed))
 
+/**
+ * @template T
+ * @param {string} key
+ * @param {T} fallback
+ * @returns {T}
+ */
 function load (key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback }
+  try { return JSON.parse(/** @type {string} */ (localStorage.getItem(key))) ?? fallback } catch { return fallback }
 }
 function save () {
   try { localStorage.setItem('dotrino-inspector-roots', JSON.stringify(roots.value)) } catch {}
 }
 
 onMounted(async () => {
-  try { ctx.value = await connect() } catch (e) { error.value = String(e.message || e) }
+  try { ctx.value = await connect() } catch (e) { error.value = String(/** @type {{ message?: string }} */ (e).message || e) }
   document.documentElement.lang = lang.value
 })
 
+/** @param {CustomEvent<{ lang?: string }>} e */
 function onLang (e) {
   lang.value = e.detail?.lang === 'en' ? 'en' : 'es'
   document.documentElement.lang = lang.value
@@ -46,6 +56,7 @@ function addRoot () {
   if (v && !roots.value.includes(v)) { roots.value.push(v); save() }
   newRoot.value = ''
 }
+/** @param {string} r */
 function dropRoot (r) {
   roots.value = roots.value.filter(x => x !== r); save()
 }
@@ -67,6 +78,10 @@ function start () {
   })
 }
 
+/**
+ * @param {import('./types.js').UiFinding} f
+ * @param {boolean} dismissed
+ */
 async function setDismissed (f, dismissed) {
   await api(dismissed ? '/api/dismiss' : '/api/undismiss', { id: f.id })
   f.dismissed = dismissed ? { at: new Date().toISOString() } : null

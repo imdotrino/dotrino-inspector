@@ -1,7 +1,14 @@
 // Severidad por CONSECUENCIA, no por tipo (DISENO §3): lo que agrava un hallazgo es
 // dónde está y quién puede leerlo, no cómo se llama.
+/** @typedef {import('./types.js').Severity} Severity */
+
+/** @type {Record<string, number>} */
 const RANK = { high: 3, medium: 2, low: 1 }
 
+/**
+ * @param {import('./types.js').Finding} f
+ * @returns {Severity}
+ */
 export function finalSeverity (f) {
   let rank = RANK[f.severity] || 1
   if (f.exposure?.includes('tracked-by-git')) rank = 3      // ya viajó: no hay nada peor
@@ -10,7 +17,13 @@ export function finalSeverity (f) {
   return rank === 3 ? 'high' : rank === 2 ? 'medium' : 'low'
 }
 
+/**
+ * @template {import('./types.js').Finding & { dismissed?: unknown }} F
+ * @param {F[]} findings
+ * @returns {F[]}
+ */
 export function sortFindings (findings) {
+  /** @type {Record<Severity, number>} */
   const order = { high: 0, medium: 1, low: 2 }
   return [...findings].sort((a, b) =>
     (a.dismissed ? 1 : 0) - (b.dismissed ? 1 : 0) ||
@@ -26,15 +39,22 @@ export function sortFindings (findings) {
  *
  * El id del grupo lleva las huellas dentro: si el archivo cambia, es un hallazgo nuevo y
  * vuelve a salir aunque el anterior estuviera descartado.
+ *
+ * @param {import('./types.js').Finding[]} findings
+ * @returns {import('./types.js').GroupedFinding[]}
  */
 export function groupFindings (findings) {
+  /** @type {Map<string, import('./types.js').Finding[]>} */
   const groups = new Map()
   for (const f of findings) {
     const key = `${f.type}:${f.file}`
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key).push(f)
+    let list = groups.get(key)
+    if (!list) groups.set(key, (list = []))
+    list.push(f)
   }
+  /** @type {Record<Severity, number>} */
   const order = { high: 3, medium: 2, low: 1 }
+  /** @type {import('./types.js').GroupedFinding[]} */
   const out = []
   for (const [key, list] of groups) {
     const worst = list.reduce((a, b) => (order[b.severity] > order[a.severity] ? b : a))
@@ -56,6 +76,7 @@ export function groupFindings (findings) {
 
 // Huella corta y estable de un conjunto de huellas. No es criptografía: solo tiene que
 // cambiar cuando cambia el contenido.
+/** @param {string} s */
 function hash (s) {
   let h = 5381
   for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0

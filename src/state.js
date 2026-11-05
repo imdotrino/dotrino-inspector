@@ -8,15 +8,22 @@ import { join } from 'node:path'
 const dir = () => join(process.env.DOTRINO_HOME || join(homedir(), '.dotrino'), 'inspector')
 const file = () => join(dir(), 'dismissed.json')
 
+/** @returns {Promise<import('./types.js').DismissState>} lo descartado; vacío si no hay nada guardado */
 export async function load () {
   try { return JSON.parse(await readFile(file(), 'utf8')) } catch { return { dismissed: {} } }
 }
 
+/** @param {import('./types.js').DismissState} state */
 async function save (state) {
   await mkdir(dir(), { recursive: true })
   await writeFile(file(), JSON.stringify(state, null, 2))
 }
 
+/**
+ * @param {string} id
+ * @param {string} [reason]
+ * @returns {Promise<import('./types.js').DismissState>}
+ */
 export async function dismiss (id, reason = '') {
   const state = await load()
   state.dismissed[id] = { reason, at: new Date().toISOString() }
@@ -24,6 +31,10 @@ export async function dismiss (id, reason = '') {
   return state
 }
 
+/**
+ * @param {string} id
+ * @returns {Promise<import('./types.js').DismissState>}
+ */
 export async function undismiss (id) {
   const state = await load()
   delete state.dismissed[id]
@@ -31,6 +42,12 @@ export async function undismiss (id) {
   return state
 }
 
+/**
+ * @template {{ id: string }} F
+ * @param {F[]} findings
+ * @param {import('./types.js').DismissState} state
+ * @returns {import('./types.js').WithDismissed<F>[]}
+ */
 export function applyDismissed (findings, state) {
   return findings.map(f => ({ ...f, dismissed: state.dismissed[f.id] || null }))
 }

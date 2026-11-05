@@ -39,7 +39,7 @@ export function findChromium () {
       process.env['PROGRAMFILES'], process.env['PROGRAMFILES(X86)'],
       process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'Programs'),
       process.env.LOCALAPPDATA
-    ].filter(Boolean)
+    ].filter(/** @returns {b is string} */ (b) => Boolean(b))
     for (const base of bases) {
       for (const rel of WIN_APPS) {
         const full = join(base, rel)
@@ -55,6 +55,10 @@ export function findChromium () {
   return null
 }
 
+/**
+ * @param {string} bin
+ * @returns {string | null}
+ */
 function inPath (bin) {
   for (const dir of (process.env.PATH || '').split(delimiter)) {
     if (!dir) continue
@@ -70,14 +74,20 @@ function inPath (bin) {
  *
  * El perfil es temporal y se borra al cerrar: la ventana no hereda extensiones
  * ni sesiones del usuario, y esta herramienta enseña secretos en pantalla.
+ *
+ * @param {string} url
+ * @param {{ width?: number, height?: number }} [opts]
+ * @returns {import('node:child_process').ChildProcess | null}
  */
 export function openAppWindow (url, { width = 1180, height = 860 } = {}) {
   const browser = findChromium()
   if (!browser) return null
 
+  /** @type {string | undefined} */
   let profile
   try {
-    profile = mkdtempSync(join(tmpdir(), 'dotrino-inspector-'))
+    const dir = mkdtempSync(join(tmpdir(), 'dotrino-inspector-'))
+    profile = dir
     // En Linux el WM agrupa por WM_CLASS: sin esto la ventana aparece como
     // «Google Chrome» en el conmutador de tareas y no como el Inspector.
     const linuxClass = platform() === 'linux' ? ['--class=dotrino-inspector'] : []
@@ -93,8 +103,8 @@ export function openAppWindow (url, { width = 1180, height = 860 } = {}) {
       '--new-window'
     ], { stdio: 'ignore' })
 
-    child.on('error', () => cleanup(profile))
-    child.on('exit', () => cleanup(profile))
+    child.on('error', () => cleanup(dir))
+    child.on('exit', () => cleanup(dir))
     return child
   } catch {
     if (profile) cleanup(profile)
@@ -102,6 +112,7 @@ export function openAppWindow (url, { width = 1180, height = 860 } = {}) {
   }
 }
 
+/** @param {string} dir */
 function cleanup (dir) {
   try { rmSync(dir, { recursive: true, force: true }) } catch {}
 }

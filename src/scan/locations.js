@@ -5,6 +5,7 @@ import { join } from 'node:path'
 
 /** @typedef {'linux'|'darwin'|'win32'} System */
 
+/** @returns {System} */
 export function currentSystem () {
   const p = platform()
   return p === 'darwin' ? 'darwin' : p === 'win32' ? 'win32' : 'linux'
@@ -15,8 +16,13 @@ const home = () => homedir()
 // Ojo: el Llavero de macOS y el Administrador de credenciales de Windows NO están aquí
 // a propósito. Ahí el secreto está bien guardado (cifrado por el sistema) y marcarlo
 // sería el ruido que enseña a ignorar la herramienta (DISENO §3).
+/**
+ * @param {System} [system]
+ * @returns {import('../types.js').Location[]}
+ */
 export function knownLocations (system = currentSystem()) {
   const h = home()
+  /** @type {(import('../types.js').Location & { systems: System[] })[]} */
   const all = [
     { path: join(h, '.ssh'), systems: ['linux', 'darwin', 'win32'], depth: 1 },
     { path: join(h, '.aws'), systems: ['linux', 'darwin', 'win32'], depth: 1 },

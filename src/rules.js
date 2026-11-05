@@ -7,20 +7,23 @@
 import { basename, extname } from 'node:path'
 import { classify, fingerprint, parseEnv, providerOf } from './scan/detect.js'
 
+/** @type {import('./types.js').System[]} */
 const ALL = ['linux', 'darwin', 'win32']
 
+/** @param {string} f */
 const isEnvFile = f => {
   const b = basename(f)
   return b === '.env' || b.startsWith('.env.') || b.endsWith('.env')
 }
 
-/** @type {Array<{type:string, systems:string[], match:(ctx)=>Array}>} */
+/** @type {import('./types.js').Rule[]} */
 export const rules = [
   {
     type: 'dotenv',
     systems: ALL,
     match ({ file, text }) {
       if (!isEnvFile(file) || text == null) return []
+      /** @type {import('./types.js').RawFinding[]} */
       const out = []
       for (const { key, value, line } of parseEnv(text)) {
         const hit = classify(key, value)
@@ -78,6 +81,7 @@ export const rules = [
     systems: ALL,
     match ({ file, text }) {
       if (basename(file) !== '.npmrc' || text == null) return []
+      /** @type {import('./types.js').RawFinding[]} */
       const out = []
       const lines = text.split(/\r?\n/)
       for (let i = 0; i < lines.length; i++) {
@@ -109,6 +113,7 @@ export const rules = [
       if (text == null) return []
       const b = basename(file)
       if (b !== 'hosts.yml' && b !== 'hosts.yaml') return []
+      /** @type {import('./types.js').RawFinding[]} */
       const out = []
       const lines = text.split(/\r?\n/)
       for (let i = 0; i < lines.length; i++) {
@@ -206,6 +211,7 @@ export const rules = [
       const b = basename(file)
       const isHistory = ['.bash_history', '.zsh_history', 'ConsoleHost_history.txt'].includes(b)
       if (!isHistory || text == null) return []
+      /** @type {import('./types.js').RawFinding[]} */
       const out = []
       const lines = text.split(/\r?\n/)
       const seen = new Set()
@@ -236,6 +242,7 @@ export const rules = [
   }
 ]
 
+/** @param {string} text */
 function isOpensshEncrypted (text) {
   // En el formato OpenSSH nuevo, la cabecera dentro del base64 dice el cifrado usado;
   // "none" significa sin frase.

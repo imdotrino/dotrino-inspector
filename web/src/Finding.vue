@@ -3,27 +3,36 @@
 // Las advertencias (`danger`) van a la vista, nunca detrás de un desplegable (§5.1).
 import { computed, ref } from 'vue'
 
-const props = defineProps({ finding: Object, t: Object, lang: String })
+const props = defineProps({
+  finding: { type: /** @type {import('vue').PropType<import('./types.js').UiFinding>} */ (Object), required: true },
+  t: { type: /** @type {import('vue').PropType<import('./types.js').Messages>} */ (Object), required: true },
+  lang: { type: /** @type {import('vue').PropType<'es' | 'en'>} */ (String), required: true }
+})
 defineEmits(['dismiss', 'undismiss'])
 
 const open = ref(false)
 const copied = ref('')
 
 const f = computed(() => props.finding)
-const title = computed(() => props.t.types[f.value.type] || f.value.type)
+const title = computed(() => /** @type {Record<string, string>} */ (props.t.types)[f.value.type] || f.value.type)
 const why = computed(() => f.value.why?.[props.lang] || '')
 const recipe = computed(() => f.value.recipe)
 const steps = computed(() => recipe.value?.steps || [])
 const allCode = computed(() => steps.value.filter(s => s.code).map(s => s.code).join('\n'))
 
 // Negrita y `código` del texto de las razones, sin meter un motor de markdown entero.
+/** @param {unknown} text */
 function rich (text) {
   return String(text || '')
-    .replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
+    .replace(/[&<>]/g, c => /** @type {Record<string, string>} */ ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
 }
 
+/**
+ * @param {string} text
+ * @param {string} mark
+ */
 async function copy (text, mark) {
   try {
     await navigator.clipboard.writeText(text)
@@ -47,7 +56,7 @@ async function copy (text, mark) {
           <template v-if="f.count > 1"> · {{ t.times(f.count) }}</template>
         </p>
       </div>
-      <button class="toggle" :aria-expanded="String(open)" :aria-label="title"
+      <button class="toggle" :aria-expanded="open ? 'true' : 'false'" :aria-label="title"
               @click.stop="open = !open">{{ open ? '−' : '+' }}</button>
     </header>
 

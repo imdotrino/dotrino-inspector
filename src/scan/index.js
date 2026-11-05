@@ -41,10 +41,15 @@ const CANDIDATE = [
 const CRED_DIR = /[\\/](?:\.ssh|\.aws|\.kube|\.docker|gcloud|GitHub CLI|gh)[\\/]/i
 const NOT_SECRET_FILE = /\.(?:pub|md|txt|log|lock|old|bak|sock)$|^known_hosts|^authorized_keys/
 
+/** @param {string} f */
 const isCandidate = f =>
   CANDIDATE.some(re => re.test(f)) ||
   (CRED_DIR.test(f) && !NOT_SECRET_FILE.test(basename(f)))
 
+/**
+ * @param {string} file
+ * @returns {Promise<string | null>} el texto, o null si es binario, grande o no se pudo leer
+ */
 export async function readIfText (file) {
   const ext = file.slice(file.lastIndexOf('.')).toLowerCase()
   if (BINARY_EXT.has(ext)) return null
@@ -58,11 +63,18 @@ export async function readIfText (file) {
   } catch { return null }
 }
 
-/** Un archivo contra todas las reglas del sistema actual. */
+/**
+ * Un archivo contra todas las reglas del sistema actual.
+ *
+ * @param {string} file
+ * @param {import('../types.js').System} [system]
+ * @returns {Promise<import('../types.js').Finding[]>}
+ */
 export async function inspectFile (file, system = currentSystem()) {
   if (!isCandidate(file)) return []
   const text = await readIfText(file)
   const ctx = { file, text, system }
+  /** @type {import('../types.js').RawFinding[]} */
   const found = []
   for (const rule of rules) {
     if (!rule.systems.includes(system)) continue
@@ -73,8 +85,15 @@ export async function inspectFile (file, system = currentSystem()) {
   return found.map(f => ({ ...f, ...context, id: `${f.type}:${f.file}:${f.line || 0}:${f.fingerprint}` }))
 }
 
-/** Lo que rodea al archivo y agrava (o no) el hallazgo: permisos y git. */
+/**
+ * Lo que rodea al archivo y agrava (o no) el hallazgo: permisos y git.
+ *
+ * @param {string} file
+ * @param {import('../types.js').System} system
+ * @returns {Promise<{ exposure: import('../types.js').Exposure[], mode?: string, repo?: string }>}
+ */
 async function fileContext (file, system) {
+  /** @type {{ exposure: import('../types.js').Exposure[], mode?: string, repo?: string }} */
   const out = { exposure: [] }
   try {
     const st = await stat(file)
@@ -94,8 +113,13 @@ async function fileContext (file, system) {
   return out
 }
 
+/** @type {Map<string, Promise<string | null>>} */
 const gitCache = new Map()
 
+/**
+ * @param {string} file
+ * @returns {Promise<{ tracked: boolean, ignored: boolean, repo: string | null }>}
+ */
 async function gitState (file) {
   const dir = dirname(file)
   if (!gitCache.has(dir)) gitCache.set(dir, findRepo(dir))
@@ -107,6 +131,10 @@ async function gitState (file) {
   return { tracked, ignored, repo }
 }
 
+/**
+ * @param {string} dir
+ * @returns {Promise<string | null>}
+ */
 async function findRepo (dir) {
   let d = resolve(dir)
   for (;;) {
@@ -117,6 +145,11 @@ async function findRepo (dir) {
   }
 }
 
+/**
+ * @param {string} cwd
+ * @param {string[]} args
+ * @returns {Promise<boolean>}
+ */
 async function gitSays (cwd, args) {
   try { await run('git', args, { cwd, timeout: 5000 }); return true } catch { return false }
 }
@@ -124,11 +157,17 @@ async function gitSays (cwd, args) {
 /**
  * Recorre y devuelve los hallazgos. `onProgress` recibe la ruta que se está mirando.
  * Nunca lanza por un archivo suelto: un permiso denegado se salta, no corta el recorrido.
+ *
+ * @param {{ roots?: string[], includeKnown?: boolean, maxDepth?: number, onProgress?: (file: string) => void, signal?: AbortSignal }} [opts]
+ * @returns {Promise<{ system: import('../types.js').System, findings: import('../types.js').Finding[], scanned: number }>}
  */
 export async function scan ({ roots = [], includeKnown = true, maxDepth = 8, onProgress, signal } = {}) {
   const system = currentSystem()
+  /** @type {import('../types.js').Finding[]} */
   const findings = []
+  /** @type {Set<string>} */
   const seen = new Set()
+  /** @type {{ path: string, depth: number }[]} */
   const targets = []
 
   if (includeKnown) {
@@ -141,6 +180,10 @@ export async function scan ({ roots = [], includeKnown = true, maxDepth = 8, onP
   }
   return { system, findings, scanned: seen.size }
 
+  /**
+   * @param {string} path
+   * @param {number} depth
+   */
   async function walk (path, depth) {
     if (signal?.aborted) return
     if (seen.has(path)) return

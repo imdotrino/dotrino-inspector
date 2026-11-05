@@ -21,6 +21,7 @@ import { finalSeverity, sortFindings, groupFindings } from './severity.js'
 const here = fileURLToPath(new URL('.', import.meta.url))
 const WEB = resolve(here, '..', 'web', 'dist')
 
+/** @type {Record<string, string>} */
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
@@ -28,16 +29,27 @@ const MIME = {
   '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2'
 }
 
+/**
+ * @param {unknown} a
+ * @param {unknown} b
+ */
 const eq = (a, b) => {
   const A = Buffer.from(String(a)); const B = Buffer.from(String(b))
   return A.length === B.length && timingSafeEqual(A, B)
 }
 
+/**
+ * El servidor local de la UI: solo 127.0.0.1, con un token de arranque de un solo uso.
+ *
+ * @returns {{ server: import('node:http').Server, readonly launchToken: string, listen (port?: number): Promise<import('node:net').AddressInfo>, close (): Promise<unknown> }}
+ */
 export function createInspectorServer () {
   let launchToken = randomBytes(24).toString('hex')
   let launchUsed = false
+  /** @type {Set<string>} */
   const sessions = new Set()
 
+  /** @param {import('node:http').IncomingMessage} req */
   const authed = req => {
     const h = req.headers.authorization || ''
     const m = /^Bearer\s+(\S+)$/.exec(h)
@@ -55,7 +67,8 @@ export function createInspectorServer () {
       return end(res, 403, { error: 'bad origin' })
     }
 
-    const url = new URL(req.url, 'http://127.0.0.1')
+    // `req.url` always exists on a request that came through `http.Server`.
+    const url = new URL(/** @type {string} */ (req.url), 'http://127.0.0.1')
     const path = url.pathname
 
     try {
@@ -99,17 +112,26 @@ export function createInspectorServer () {
 
       return await serveStatic(path, res)
     } catch (err) {
-      end(res, 500, { error: String(err && err.message || err) })
+      end(res, 500, { error: String(err && /** @type {{ message?: string }} */ (err).message || err) })
     }
   })
 
   // El recorrido puede tardar: se manda el progreso según pasa, no un silencio de un minuto.
+  /**
+   * @param {import('node:http').IncomingMessage} req
+   * @param {import('node:http').ServerResponse} res
+   * @param {URL} url
+   */
   async function sse (req, res, url) {
     res.writeHead(200, {
       'content-type': 'text/event-stream',
       'cache-control': 'no-store',
       connection: 'keep-alive'
     })
+    /**
+     * @param {string} event
+     * @param {unknown} data
+     */
     const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
     const controller = new AbortController()
     req.on('close', () => controller.abort())
@@ -141,11 +163,15 @@ export function createInspectorServer () {
       )
       send('done', { system: result.system, scanned: result.scanned, findings })
     } catch (err) {
-      send('failed', { error: String(err && err.message || err) })
+      send('failed', { error: String(err && /** @type {{ message?: string }} */ (err).message || err) })
     }
     res.end()
   }
 
+  /**
+   * @param {string} path
+   * @param {import('node:http').ServerResponse} res
+   */
   async function serveStatic (path, res) {
     const rel = path === '/' ? 'index.html' : normalize(path).replace(/^([/\\.]+)/, '')
     const full = join(WEB, rel)
@@ -175,20 +201,30 @@ export function createInspectorServer () {
     get launchToken () { return launchToken },
     listen (port = 0) {
       return new Promise(resolve => {
-        server.listen(port, '127.0.0.1', () => resolve(server.address()))
+        server.listen(port, '127.0.0.1', () => resolve(/** @type {import('node:net').AddressInfo} */ (server.address())))
       })
     },
     close () { return new Promise(r => server.close(r)) }
   }
 }
 
+/**
+ * @param {import('node:http').ServerResponse} res
+ * @param {number} code
+ * @param {unknown} obj
+ */
 function end (res, code, obj) {
   const body = JSON.stringify(obj)
   res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
   res.end(body)
 }
 
+/**
+ * @param {import('node:http').IncomingMessage} req
+ * @returns {Promise<Record<string, any>>} el JSON del cuerpo; {} si no hay o no se puede leer
+ */
 async function readBody (req) {
+  /** @type {Buffer[]} */
   const chunks = []
   let size = 0
   for await (const c of req) {
@@ -200,6 +236,7 @@ async function readBody (req) {
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { return {} }
 }
 
+/** @returns {Promise<string>} */
 async function version () {
   try {
     const pkg = JSON.parse(await readFile(resolve(here, '..', 'package.json'), 'utf8'))
