@@ -32,7 +32,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@dotrino/update": "0.6.1"
+    "@dotrino/update": "0.12.1"
   },
   "devDependencies": {
     "@types/node": "22.20.1",
